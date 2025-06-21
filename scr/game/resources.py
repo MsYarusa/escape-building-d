@@ -35,6 +35,17 @@ enemy_images = {
         'images\\cockroach.png')
 }
 
+button_images = {
+    'pause': {
+        False: load_image('images\\Buttons\\pause_dis.png'),
+        True: load_image('images\\Buttons\\pause_act.png')
+    },
+    'btn': {
+        False: load_image('images\\Buttons\\btn_dis.png', (0, 0, 0)),
+        True: load_image('images\\Buttons\\btn_act.png', (0, 0, 0))
+    }
+}
+
 replicas = {
     'vent': ['О, это же вентиляция', 'Что будет если я туда залезу?'],
     'key': ['Это же ключ!', 'Интересно от какой он двери'],

@@ -1,3 +1,5 @@
+LEVEL_PATH = 'levels\\level_03.txt'
+
 # Скорость игрока
 PLAYER_SPEED = 3
 PLAYER_RECT_X = 30
