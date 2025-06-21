@@ -4,7 +4,7 @@ from objects import *
 import time
 from random import choice, randint
 
-levels = ['Levels\\level_03.txt']
+levels = ['levels\\level_03.txt']
 
 
 def generate_level(level):
@@ -109,10 +109,10 @@ def start_screen():
     pg.display.set_caption('Лабиринт')
 
     screen.blit(load_image(
-        'Images\\background.png'), (0, 0))
+        'images\\background.png'), (0, 0))
 
     logo = load_image(
-        'Images\\logo.png')
+        'images\\logo.png')
     logo_rect = logo.get_rect()
     logo_rect.x = WIN_WIDTH // 2 - logo_rect.width // 2
     logo_rect.y = 50
@@ -150,7 +150,7 @@ def end_screen():
     pg.display.set_caption('Лабиринт')
 
     screen.blit(load_image(
-        'Images\\background.png'), (0, 0))
+        'images\\background.png'), (0, 0))
 
     label_font = pg.font.SysFont('calibry', 60)
     text_rendered = label_font.render('Пока все!', 0, pg.Color('white'))
@@ -191,7 +191,7 @@ def dead_screen():
     pg.display.set_caption('Лабиринт')
 
     screen.blit(load_image(
-        'Images\\background.png'), (0, 0))
+        'images\\background.png'), (0, 0))
 
     label_font = pg.font.SysFont('calibry', 60)
     text_rendered = label_font.render('D корпус поглотил Вас!', 0, pg.Color('white'))

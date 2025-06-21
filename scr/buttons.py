@@ -6,12 +6,12 @@ moving = pg.sprite.Group()
 
 button_images = {
     'pause': {
-        False: load_image('Images\\Buttons\\pause_dis.png'),
-        True: load_image('Images\\Buttons\\pause_act.png')
+        False: load_image('images\\Buttons\\pause_dis.png'),
+        True: load_image('images\\Buttons\\pause_act.png')
     },
     'btn': {
-        False: load_image('Images\\Buttons\\btn_dis.png', (0, 0, 0)),
-        True: load_image('Images\\Buttons\\btn_act.png', (0, 0, 0))
+        False: load_image('images\\Buttons\\btn_dis.png', (0, 0, 0)),
+        True: load_image('images\\Buttons\\btn_act.png', (0, 0, 0))
     }
 }
 
@@ -87,7 +87,7 @@ class Replica(Text):
         super().__init__()
 
         text_image = pg.transform.scale(load_image(
-            'Images\\replica.png'), self.size)
+            'images\\replica.png'), self.size)
         self.image.blit(text_image, (0, 0))
 
         self.text = []

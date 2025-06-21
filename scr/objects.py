@@ -1,4 +1,3 @@
-
 from scr.load import *
 from copy import deepcopy
 
@@ -18,33 +17,33 @@ keys = pg.sprite.Group()
 
 tile_images = {
    'simple_floor': pg.transform.scale(load_image(
-       'Images\\floor.png'), (TILE_WIDTH, TILE_HEIGHT)),
+       'images\\floor.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'floor_near_wall': pg.transform.scale(load_image(
-        'Images\\floor_near_wall.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\floor_near_wall.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'wall': pg.transform.scale(load_image(
-        'Images\\wall.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\wall.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'door': pg.transform.scale(load_image(
-        'Images\\door.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\door.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'stairs': pg.transform.scale(load_image(
-        'Images\\stairs.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\stairs.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'vent': pg.transform.scale(load_image(
-        'Images\\vent.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\vent.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'key': load_image(
-        'Images\\key.png'),
+        'images\\key.png'),
     'locked_door': pg.transform.scale(load_image(
-        'Images\\locked_door.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\locked_door.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'unlocked_door': pg.transform.scale(load_image(
-        'Images\\unlocked_door.png'), (TILE_WIDTH, TILE_HEIGHT)),
+        'images\\unlocked_door.png'), (TILE_WIDTH, TILE_HEIGHT)),
     'pair_door': pg.transform.scale(load_image(
-        'Images\\pair_door.png'), (TILE_WIDTH, TILE_HEIGHT))
+        'images\\pair_door.png'), (TILE_WIDTH, TILE_HEIGHT))
 
 }
 
 enemy_images = {
     'lost_soul': load_image(
-        'Images\\lost_soul_.png'),
+        'images\\lost_soul_.png'),
     'cockroach': load_image(
-        'Images\\cockroach.png')
+        'images\\cockroach.png')
 }
 
 replicas = {
@@ -264,7 +263,7 @@ class Player(pg.sprite.Sprite):
         self.name = 'Степан'
 
         self.frames = cut_sheet(load_image(
-            'Images\\player.png'), 8, 4)
+            'images\\player.png'), 8, 4)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
 
