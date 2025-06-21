@@ -1,11 +1,13 @@
 import pygame as pg
 
+from game.resources import player_images
 from game.utils.images import cut_sheet, load_image
 from game.settings import (
     SHADOW_WIDTH,
     SHADOW_HEIGHT,
     TILE_WIDTH,
     TILE_HEIGHT,
+    PLAYER_NAME,
     PLAYER_RECT_X,
     PLAYER_RECT_Y,
     PLAYER_SPEED,
@@ -25,10 +27,14 @@ class Player(pg.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(all_sprites_group, player_group)
 
-        self.name = 'Степан'
+        self.name = PLAYER_NAME
 
-        self.frames = cut_sheet(load_image(
-            'images\\player.png'), 8, 4)
+        self.frames = cut_sheet(
+            player_images['player']['img'],
+            player_images['player']['cols'],
+            player_images['player']['rows']
+        )
+
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
 

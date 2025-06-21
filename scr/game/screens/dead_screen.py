@@ -2,21 +2,14 @@ import pygame as pg
 import time
 
 from game.utils.images import load_image
-from game.settings import WIN_WIDTH, WIN_HEIGHT, WIN_SIZE
+from game.settings import WIN_WIDTH, WIN_HEIGHT
 
 from game.ui import Button
 
-from game.screens import start_screen
 
-from game import main
-
-
-def dead_screen():
-    screen = pg.display.set_mode(WIN_SIZE)
-    pg.display.set_caption('Лабиринт')
-
+def show_dead_screen(set_active_screen, screen, clock):
     screen.blit(load_image(
-        'images\\background.png'), (0, 0))
+        '..\\assets\\images\\ui\\background.png'), (0, 0))
 
     label_font = pg.font.SysFont('calibry', 60)
     text_rendered = label_font.render('D корпус поглотил Вас!', 0, pg.Color('white'))
@@ -57,7 +50,13 @@ def dead_screen():
 
         pg.display.flip()
     time.sleep(0.2)
+
     if menu:
-        start_screen()
+        set_active_screen('start')
+
+        return True
+
     if restart:
-        main()
+        set_active_screen('main')
+
+        return True

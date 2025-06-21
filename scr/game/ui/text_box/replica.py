@@ -1,6 +1,6 @@
 import pygame as pg
 
-from game.utils.images import load_image
+from game.resources import replica_images
 from game.groups import interactable_objects_group
 from game.settings import BLACK, TILE_WIDTH, TILE_HEIGHT, WIN_HEIGHT
 
@@ -11,8 +11,7 @@ class Replica(BaseTextBox):
     def __init__(self):
         super().__init__()
 
-        text_image = pg.transform.scale(load_image(
-            'images\\replica.png'), self.size)
+        text_image = pg.transform.scale(replica_images['replica'], self.size)
         self.image.blit(text_image, (0, 0))
 
         self.text = []

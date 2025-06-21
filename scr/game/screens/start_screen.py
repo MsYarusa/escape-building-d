@@ -2,22 +2,19 @@ import pygame as pg
 import time
 
 from game.utils.images import load_image
-from game.settings import WIN_WIDTH, WIN_SIZE
+from game.settings import WIN_WIDTH
 
 from game.ui import Button
 
-from game import main
 
-
-def start_screen():
-    screen = pg.display.set_mode(WIN_SIZE)
-    pg.display.set_caption('Лабиринт')
+def show_start_screen(set_active_screen, screen, clock):
 
     screen.blit(load_image(
-        'images\\background.png'), (0, 0))
+        '..\\assets\\images\\ui\\background.png'), (0, 0))
 
     logo = load_image(
-        'images\\logo.png')
+        '..\\assets\\images\\ui\\logo.png')
+
     logo_rect = logo.get_rect()
     logo_rect.x = WIN_WIDTH // 2 - logo_rect.width // 2
     logo_rect.y = 50
@@ -46,5 +43,8 @@ def start_screen():
 
         pg.display.flip()
     time.sleep(0.2)
+
     if start:
-        main()
+        set_active_screen('main')
+
+        return True

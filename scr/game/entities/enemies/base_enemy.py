@@ -15,10 +15,10 @@ from game.settings import (
     SHADOW_COEF
 )
 
-# скорость, ширина прямоугольника, высота прямоугольника, количество кадров по горизонтали, количество кадров по вертикали
+# скорость, ширина прямоугольника, высота прямоугольника
 enemy_data = {
-    'lost_soul': (LOST_SOUL_SPEED, LOST_SOUL_RECT_X, LOST_SOUL_RECT_Y, 8, 4),
-    'cockroach': (COCKROACH_SPEED, COCKROACH_RECT_X, COCKROACH_RECT_Y, 4, 1)
+    'lost_soul': (LOST_SOUL_SPEED, LOST_SOUL_RECT_X, LOST_SOUL_RECT_Y),
+    'cockroach': (COCKROACH_SPEED, COCKROACH_RECT_X, COCKROACH_RECT_Y)
 }
 
 
@@ -26,9 +26,9 @@ class BaseEnemy(pg.sprite.Sprite):
     def __init__(self, enemy_type, pos_x, pos_y):
         super().__init__(all_sprites_group, enemies_group)
 
-        cols = enemy_data[enemy_type][3]
-        rows = enemy_data[enemy_type][4]
-        self.frames = cut_sheet(enemy_images[enemy_type], cols, rows)
+        cols = enemy_images[enemy_type]['cols']
+        rows = enemy_images[enemy_type]['rows']
+        self.frames = cut_sheet(enemy_images[enemy_type]['img'], cols, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
 

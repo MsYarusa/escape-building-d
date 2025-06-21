@@ -12,3 +12,18 @@ replica_group = pg.sprite.Group()
 vents_group = pg.sprite.Group()
 keys_group = pg.sprite.Group()
 text_boxes_group = pg.sprite.Group()
+
+
+def clear_all_groups():
+    all_sprites_group.empty()
+    tiles_group.empty()
+    walls_group.empty()
+    player_group.empty()
+    enemies_group.empty()
+    shadow_overlay_group.empty()
+    stairs_group.empty()
+    interactable_objects_group.empty()
+    replica_group.empty()
+    vents_group.empty()
+    keys_group.empty()
+    text_boxes_group.empty()

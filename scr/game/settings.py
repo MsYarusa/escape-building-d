@@ -1,11 +1,12 @@
-LEVEL_PATH = 'levels\\level_03.txt'
+LEVEL_PATH = '..\\assets\\levels\\level_02.txt'
 
-# Скорость игрока
+# Игрок
+PLAYER_NAME = 'Степан'
 PLAYER_SPEED = 3
 PLAYER_RECT_X = 30
 PLAYER_RECT_Y = 63
 
-# Скорость врагов
+# Враги
 COCKROACH_SPEED = 4
 COCKROACH_RECT_X = 64
 COCKROACH_RECT_Y = 64
@@ -26,4 +27,7 @@ SHADOW_WIDTH = SHADOW_HEIGHT = TILE_WIDTH // SHADOW_COEF
 
 # Цвета
 BLACK = (0, 0, 0)
+
+# FPS
+FPS = 90
 
