@@ -14,6 +14,11 @@ class Vent(BaseNoticeableObject):
 
     def interact(self):
         for player in player_group:
+            # Телепортируем игрока к парной вентиляции
             player.rect.x = self.pair.rect.x
             player.rect.y = self.pair.rect.y
+            # Обновляем позицию в базовом классе
+            player.x = player.rect.x
+            player.y = player.rect.y
+            # Обновляем внутренний прямоугольник для коллизий
             player.set_inner_rect()

@@ -131,6 +131,14 @@ def show_main_screen(set_active_screen, screen, clock):
                 if event.key == pg.K_d or event.key == pg.K_RIGHT:
                     player.right = False
 
+        # Обновляем направление движения игрока на основе состояния клавиш
+        player.set_movement_direction(
+            up=player.up,
+            down=player.down,
+            left=player.left,
+            right=player.right
+        )
+
         # Обновление игровой логики (только если не на паузе)
         if not paused:
             if player_it % 2 == 0:
