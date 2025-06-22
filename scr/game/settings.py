@@ -25,6 +25,13 @@ TILE_WIDTH = TILE_HEIGHT = 64
 SHADOW_COEF = 2
 SHADOW_WIDTH = SHADOW_HEIGHT = TILE_WIDTH // SHADOW_COEF
 
+# Система освещения
+LIGHT_RADIUS_BRIGHT = 4  # Радиус яркого света в тайлах теней
+LIGHT_RADIUS_DIM = 6     # Радиус полутени в тайлах теней
+LIGHT_BRIGHTNESS_BRIGHT = 0   # Полностью прозрачный
+LIGHT_BRIGHTNESS_DIM = 121    # Полупрозрачный
+LIGHT_BRIGHTNESS_DARK = 250   # Полностью непрозрачный
+
 # Цвета
 BLACK = (0, 0, 0)
 
