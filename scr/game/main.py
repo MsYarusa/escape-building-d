@@ -1,6 +1,6 @@
 import pygame as pg
 
-from game.screens import show_start_screen, show_end_screen, show_dead_screen, show_main_screen
+from game.screens import show_start_screen, show_end_screen, show_dead_screen, show_main_screen, show_level_select_screen
 from game.settings import WIN_SIZE, BLACK
 
 
@@ -31,6 +31,8 @@ if __name__ == "__main__":
             current_screen_function = show_dead_screen
         elif active_screen_name == 'end':
             current_screen_function = show_end_screen
+        elif active_screen_name == 'level_select':
+            current_screen_function = show_level_select_screen
 
         if current_screen_function:
             screen.fill(BLACK)

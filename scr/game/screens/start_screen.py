@@ -23,11 +23,16 @@ def show_start_screen(set_active_screen, screen, clock):
 
     btn_size = (280, 80)
     start_pos = (WIN_WIDTH // 2 - btn_size[0] // 2, 400)
+    select_pos = (WIN_WIDTH // 2 - btn_size[0] // 2, 500)
     start_btn = Button(start_pos, 'btn')
     start_btn.scale(btn_size)
     start_btn.set_text('Начать игру', font_size=40)
+    select_btn = Button(select_pos, 'btn')
+    select_btn.scale(btn_size)
+    select_btn.set_text('Выбор уровня', font_size=40)
 
     start = False
+    select = False
     running = True
     while running:
 
@@ -38,13 +43,19 @@ def show_start_screen(set_active_screen, screen, clock):
                 if start_btn.pressed(event.pos):
                     running = False
                     start = True
+                if select_btn.pressed(event.pos):
+                    running = False
+                    select = True
 
         screen.blit(start_btn.image, (start_btn.rect.x, start_btn.rect.y))
+        screen.blit(select_btn.image, (select_btn.rect.x, select_btn.rect.y))
 
         pg.display.flip()
     time.sleep(0.2)
 
     if start:
         set_active_screen('main')
-
+        return True
+    if select:
+        set_active_screen('level_select')
         return True

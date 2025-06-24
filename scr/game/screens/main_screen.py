@@ -1,7 +1,7 @@
 import pygame as pg
 
+import game.level_state as level_state
 from game.settings import (
-    LEVEL_PATH,
     WIN_WIDTH,
     TILE_WIDTH,
     TILE_HEIGHT,
@@ -49,7 +49,7 @@ def show_main_screen(set_active_screen, screen, clock):
     clear_all_groups()
 
     # Загружаем уровень и создаем игрока
-    level = load_level(LEVEL_PATH)
+    level = load_level(level_state.current_level_path)
     player = generate_level(level)
 
     # Вычисляем размеры уровня

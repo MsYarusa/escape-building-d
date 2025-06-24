@@ -1,4 +1,4 @@
-LEVEL_PATH = '..\\assets\\levels\\level_03.txt'
+# Удаляю LEVEL_PATH, теперь путь к уровню будет храниться в отдельном модуле level_state.py
 
 # Игрок
 PLAYER_NAME = 'Степан'
