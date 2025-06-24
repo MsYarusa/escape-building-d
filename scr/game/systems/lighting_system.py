@@ -23,12 +23,12 @@ class LightingSystem:
     """Система освещения и теней для игры"""
     
     def __init__(self):
-        self._light_radius_bright = LIGHT_RADIUS_BRIGHT * SHADOW_WIDTH  # Радиус яркого света
-        self._light_radius_dim = LIGHT_RADIUS_DIM * SHADOW_WIDTH       # Радиус полутени
+        self._light_radius_bright = LIGHT_RADIUS_BRIGHT
+        self._light_radius_dim = LIGHT_RADIUS_DIM
         self._last_player_pos: Optional[Tuple[int, int]] = None
-        self._cached_visibility: dict = {}
-        self._ray_tracer = RayTracer()
-        
+        self._visible_cells: set = set()
+        self._player_grid_pos: Optional[Tuple[int, int]] = None
+    
     def update_lighting(self, player_pos: Tuple[int, int], level: List[str]) -> None:
         """
         Обновляет освещение на основе позиции игрока
@@ -37,108 +37,61 @@ class LightingSystem:
             player_pos: Позиция игрока в пикселях (x, y)
             level: Карта уровня
         """
-        # Проверяем, изменилась ли позиция игрока
-        if self._last_player_pos == player_pos:
-            return
-            
-        self._last_player_pos = player_pos
-        self._cached_visibility.clear()
-        
-        # Обновляем освещение для всех теневых элементов
-        for shadow_element in shadow_overlay_group:
-            self._update_shadow_element(shadow_element, player_pos, level)
-    
-    def _update_shadow_element(self, shadow_element, player_pos: Tuple[int, int], level: List[str]) -> None:
-        """
-        Обновляет освещение для конкретного теневого элемента
-        
-        Args:
-            shadow_element: Элемент тени для обновления
-            player_pos: Позиция игрока в пикселях
-            level: Карта уровня
-        """
-        shadow_center = (shadow_element.rect.centerx, shadow_element.rect.centery)
-        distance = self._calculate_distance(player_pos, shadow_center)
-        
-        # Если элемент слишком далеко, делаем его темным
-        if distance > self._light_radius_dim:
-            self._set_shadow_brightness(shadow_element, LightLevel.DARK)
-            return
-            
-        # Проверяем видимость через стены
-        is_visible = self._check_visibility(shadow_center, player_pos, level)
-        
-        if not is_visible:
-            self._set_shadow_brightness(shadow_element, LightLevel.DARK)
-            return
-            
-        # Устанавливаем уровень освещения в зависимости от расстояния
-        if distance <= self._light_radius_bright:
-            self._set_shadow_brightness(shadow_element, LightLevel.BRIGHT)
-        else:
-            self._set_shadow_brightness(shadow_element, LightLevel.DIM)
-    
-    def _calculate_distance(self, pos1: Tuple[int, int], pos2: Tuple[int, int]) -> float:
-        """
-        Вычисляет евклидово расстояние между двумя точками
-        
-        Args:
-            pos1: Первая точка (x, y)
-            pos2: Вторая точка (x, y)
-            
-        Returns:
-            Расстояние между точками
-        """
-        return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2) ** 0.5
-    
-    def _check_visibility(self, shadow_pos: Tuple[int, int], player_pos: Tuple[int, int], level: List[str]) -> bool:
-        """
-        Проверяет видимость между двумя точками через стены
-        
-        Args:
-            shadow_pos: Позиция теневого элемента
-            player_pos: Позиция игрока
-            level: Карта уровня
-            
-        Returns:
-            True если точки видимы друг другу
-        """
-        # Конвертируем в координаты сетки теней
-        shadow_grid_x = shadow_pos[0] // SHADOW_WIDTH
-        shadow_grid_y = shadow_pos[1] // SHADOW_HEIGHT
+        # Переводим позицию игрока в координаты сетки теней
         player_grid_x = player_pos[0] // SHADOW_WIDTH
         player_grid_y = player_pos[1] // SHADOW_HEIGHT
-        
-        # Создаем ключ для кэширования
-        cache_key = (shadow_grid_x, shadow_grid_y, player_grid_x, player_grid_y)
-        
-        if cache_key in self._cached_visibility:
-            return self._cached_visibility[cache_key]
-        
-        # Используем оптимизированную трассировку лучей
-        is_visible = RayTracer.check_line_of_sight(
-            (shadow_grid_x, shadow_grid_y), 
-            (player_grid_x, player_grid_y), 
-            level, 
+        player_grid_pos = (player_grid_x, player_grid_y)
+
+        # Проверяем, изменилась ли позиция игрока
+        if self._player_grid_pos == player_grid_pos:
+            return
+        self._player_grid_pos = player_grid_pos
+
+        # Массово вычисляем видимые ячейки в радиусе полутени
+        self._visible_cells = RayTracer.get_visible_cells(
+            player_grid_pos,
+            self._light_radius_dim,
+            level,
             SHADOW_COEF
         )
-        
-        # Кэшируем результат
-        self._cached_visibility[cache_key] = is_visible
-        return is_visible
-    
+
+        # Обновляем освещение только для теней в радиусе
+        for shadow_element in shadow_overlay_group:
+            shadow_grid_x = shadow_element.rect.centerx // SHADOW_WIDTH
+            shadow_grid_y = shadow_element.rect.centery // SHADOW_HEIGHT
+            shadow_grid_pos = (shadow_grid_x, shadow_grid_y)
+
+            # Если вне радиуса полутени — тьма
+            if self._distance(player_grid_pos, shadow_grid_pos) > self._light_radius_dim:
+                self._set_shadow_brightness(shadow_element, LightLevel.DARK)
+                continue
+
+            # Если не видим — тьма
+            if shadow_grid_pos not in self._visible_cells:
+                self._set_shadow_brightness(shadow_element, LightLevel.DARK)
+                continue
+
+            # Внутри яркого радиуса — ярко, иначе полутень
+            if self._distance(player_grid_pos, shadow_grid_pos) <= self._light_radius_bright:
+                self._set_shadow_brightness(shadow_element, LightLevel.BRIGHT)
+            else:
+                self._set_shadow_brightness(shadow_element, LightLevel.DIM)
+
+    def _distance(self, pos1: Tuple[int, int], pos2: Tuple[int, int]) -> float:
+        """Евклидово расстояние между двумя точками сетки теней"""
+        return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2) ** 0.5
+
     def _set_shadow_brightness(self, shadow_element, light_level: LightLevel) -> None:
         """
         Устанавливает яркость теневого элемента
-        
         Args:
             shadow_element: Элемент тени
             light_level: Уровень освещения
         """
         if shadow_element.brightness != light_level.value:
             shadow_element.set_brightness(light_level.value)
-    
+
     def clear_cache(self) -> None:
-        """Очищает кэш видимости"""
-        self._cached_visibility.clear()
-        self._last_player_pos = None 
+        """Сброс состояния освещения"""
+        self._visible_cells = set()
+        self._player_grid_pos = None 

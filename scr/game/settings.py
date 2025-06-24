@@ -1,4 +1,4 @@
-LEVEL_PATH = '..\\assets\\levels\\level_02.txt'
+LEVEL_PATH = '..\\assets\\levels\\level_03.txt'
 
 # Игрок
 PLAYER_NAME = 'Степан'
