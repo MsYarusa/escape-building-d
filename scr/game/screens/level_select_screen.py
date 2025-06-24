@@ -5,6 +5,7 @@ from game.settings import WIN_WIDTH, WIN_HEIGHT, BLACK
 from game.ui import Button
 from game.level_state import set_current_level_path
 from game.utils.images import load_image
+from game.progress_manager import progress_manager
 
 def draw_arrow(surface, direction='up', color=(0, 0, 0)):
     w, h = surface.get_size()
@@ -17,8 +18,7 @@ def draw_arrow(surface, direction='up', color=(0, 0, 0)):
 def show_level_select_screen(set_active_screen, screen, clock):
     background = load_image('..\\assets\\images\\ui\\background.png')
 
-    levels_dir = os.path.join('..', 'assets', 'levels')
-    level_files = [f for f in os.listdir(levels_dir) if f.endswith('.txt')]
+    level_files = progress_manager.levels
     level_files.sort()
     num_visible = 4
     start_index = 0
@@ -62,7 +62,6 @@ def show_level_select_screen(set_active_screen, screen, clock):
         screen.blit(title, title_rect)
         screen.blit(back_btn.image, (back_btn.rect.x, back_btn.rect.y))
 
-        # Определяем, какие кнопки показывать
         visible = []
         for i in range(num_visible):
             idx = start_index + i
@@ -78,10 +77,15 @@ def show_level_select_screen(set_active_screen, screen, clock):
                 screen.blit(down_btn.image, (down_btn.rect.x, down_btn.rect.y))
                 visible.append(('down', down_btn))
             elif idx < len(level_files):
-                if not is_pressed:
-                    btn.set_text(f'Уровень {idx+1}', font_size=32, color='black')
+                unlocked = progress_manager.is_unlocked(idx + 1)
+                color = 'black' if unlocked else 'gray'
+                btn.set_text(f'Уровень {idx+1}', font_size=32, color=color)
+                if not unlocked:
+                    btn.image.set_alpha(120)
+                else:
+                    btn.image.set_alpha(255)
                 screen.blit(btn.image, (btn.rect.x, btn.rect.y))
-                visible.append(('level', btn, level_files[idx]))
+                visible.append(('level', btn, level_files[idx], unlocked))
         pg.display.flip()
 
         for event in pg.event.get():
@@ -96,7 +100,6 @@ def show_level_select_screen(set_active_screen, screen, clock):
                     btn = item[1]
                     if btn.rect.collidepoint(event.pos):
                         btn.change_state()
-                        # Если это стрелка — перерисовать стрелку на новом image
                         if item[0] == 'up':
                             draw_arrow(btn.image, direction='up', color=(0, 0, 0))
                         elif item[0] == 'down':
@@ -115,7 +118,6 @@ def show_level_select_screen(set_active_screen, screen, clock):
                     item, btn = pressed_btn
                     if btn.rect.collidepoint(event.pos):
                         btn.change_state()
-                        # Если это стрелка — перерисовать стрелку на новом image
                         if item[0] == 'up':
                             draw_arrow(btn.image, direction='up', color=(0, 0, 0))
                         elif item[0] == 'down':
@@ -126,7 +128,7 @@ def show_level_select_screen(set_active_screen, screen, clock):
                             start_index = max(0, start_index - 1)
                         elif item[0] == 'down':
                             start_index = min(len(level_files) - num_visible, start_index + 1)
-                        elif item[0] == 'level':
+                        elif item[0] == 'level' and item[3]:
                             set_current_level_path(os.path.join('..', 'assets', 'levels', item[2]))
                             set_active_screen('main')
                             return True
@@ -137,4 +139,10 @@ def show_level_select_screen(set_active_screen, screen, clock):
                         elif item[0] == 'down':
                             draw_arrow(btn.image, direction='down', color=(0, 0, 0))
                     pressed_btn = None
+            if event.type == pg.KEYDOWN:
+                mods = pg.key.get_mods()
+                if event.key == pg.K_u and (mods & pg.KMOD_CTRL) and (mods & pg.KMOD_SHIFT):
+                    progress_manager.unlock_all()
+                if event.key == pg.K_r and (mods & pg.KMOD_CTRL) and (mods & pg.KMOD_SHIFT):
+                    progress_manager.reset_progress()
     return False 

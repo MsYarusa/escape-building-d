@@ -1,4 +1,5 @@
 import pygame as pg
+import os
 
 import game.level_state as level_state
 from game.settings import (
@@ -24,6 +25,8 @@ from game.groups import (
     clear_all_groups
 )
 from game.ui import Hint, Replica, Button
+from game.progress_manager import progress_manager
+from game.screens.end_level_screen import show_end_level_screen
 
 
 def show_main_screen(set_active_screen, screen, clock):
@@ -79,6 +82,13 @@ def show_main_screen(set_active_screen, screen, clock):
     dead = False
     end = False
     
+    # Получаем индекс текущего уровня
+    current_level_name = level_state.current_level_path.split('Level_')[-1].split('.txt')[0]
+    try:
+        current_level_idx = int(current_level_name)
+    except Exception:
+        current_level_idx = 1
+
     while running:
         clock.tick(FPS)
 
@@ -196,5 +206,15 @@ def show_main_screen(set_active_screen, screen, clock):
         return True
 
     if end:
-        set_active_screen('end')
+        # Отмечаем уровень как завершённый и открываем следующий
+        progress_manager.complete_level(current_level_idx)
+        progress_manager.unlock_level(current_level_idx + 1)
+        # Переходим на экран завершения уровня
+        next_level = show_end_level_screen(set_active_screen, screen, clock, current_level_idx)
+        if next_level is not None:
+            # Если выбран следующий уровень, меняем путь и запускаем main_screen снова
+            if next_level <= len(progress_manager.levels):
+                from game.level_state import set_current_level_path
+                set_current_level_path(os.path.join('..', 'assets', 'levels', progress_manager.levels[next_level-1]))
+                show_main_screen(set_active_screen, screen, clock)
         return True
