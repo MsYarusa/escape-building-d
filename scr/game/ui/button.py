@@ -17,6 +17,8 @@ class Button(pg.sprite.Sprite):
         self.size = (self.rect.width, self.rect.height)
 
     def set_text(self, text, font_size=18, color='black', font='calibry'):
+        # Пересоздаём image из исходного шаблона, чтобы не было наложения текста
+        self.image = pg.transform.scale(button_images[self.type][False], self.size)
         text_font = pg.font.SysFont(font, font_size)
         text_rendered = text_font.render(text, 0, pg.Color(color))
         text_rect = text_rendered.get_rect()
@@ -27,8 +29,8 @@ class Button(pg.sprite.Sprite):
 
     def scale(self, size):
         self.size = size
-        self.image = pg.transform.scale(self.image, size)
-        self.buff_image = pg.transform.scale(self.buff_image, size)
+        self.image = pg.transform.scale(button_images[self.type][False], size)
+        self.buff_image = pg.transform.scale(button_images[self.type][True], size)
         self.rect = self.image.get_rect()
         self.rect.x = self.pos[0]
         self.rect.y = self.pos[1]
