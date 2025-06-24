@@ -1,5 +1,6 @@
 import pygame as pg
 import os
+import time
 from game.settings import WIN_WIDTH, WIN_HEIGHT, BLACK
 from game.ui import Button
 from game.level_state import set_current_level_path
@@ -26,6 +27,7 @@ def show_level_select_screen(set_active_screen, screen, clock):
     gap = 20
     start_y = 180
 
+    # Кнопка назад
     back_btn = Button((30, 30), 'btn')
     back_btn.scale((180, 60))
     back_btn.set_text('Назад', font_size=28, color='black')
@@ -34,41 +36,52 @@ def show_level_select_screen(set_active_screen, screen, clock):
     title = font.render('Выберите уровень', True, (255, 255, 255))
     title_rect = title.get_rect(center=(WIN_WIDTH // 2, 100))
 
+    # Создаём кнопки уровней и стрелок один раз
+    level_btns = []
+    for i in range(num_visible):
+        pos = (WIN_WIDTH // 2 - btn_size[0] // 2, start_y + i * (btn_size[1] + gap))
+        btn = Button(pos, 'btn')
+        btn.scale(btn_size)
+        level_btns.append(btn)
+    up_btn = Button(level_btns[0].pos, 'btn')
+    up_btn.scale(btn_size)
+    up_btn.set_text('', font_size=1, color='black')
+    draw_arrow(up_btn.image, direction='up', color=(0, 0, 0))
+    down_btn = Button(level_btns[-1].pos, 'btn')
+    down_btn.scale(btn_size)
+    down_btn.set_text('', font_size=1, color='black')
+    draw_arrow(down_btn.image, direction='down', color=(0, 0, 0))
+
     running = True
+    back_pressed = False
+    pressed_btn = None  # (item, btn)
     while running:
         clock.tick(60)
         screen.fill(BLACK)
         screen.blit(background, (0, 0))
         screen.blit(title, title_rect)
+        screen.blit(back_btn.image, (back_btn.rect.x, back_btn.rect.y))
 
-        # Формируем список отображаемых кнопок
-        visible_btns = []
+        # Определяем, какие кнопки показывать
+        visible = []
         for i in range(num_visible):
             idx = start_index + i
-            pos = (WIN_WIDTH // 2 - btn_size[0] // 2, start_y + i * (btn_size[1] + gap))
-            btn = Button(pos, 'btn')
-            btn.scale(btn_size)
-            # Первая кнопка — стрелка вверх, если можно листать вверх
+            btn = level_btns[i]
+            btn.rect.y = start_y + i * (btn_size[1] + gap)
+            is_pressed = pressed_btn and pressed_btn[1] is btn
             if i == 0 and start_index > 0:
-                # Очищаем кнопку и рисуем стрелку
-                btn.set_text('', font_size=1, color='black')
-                draw_arrow(btn.image, direction='up', color=(0, 0, 0))
-                visible_btns.append(('up', btn))
-            # Последняя кнопка — стрелка вниз, если можно листать вниз
+                up_btn.rect.y = btn.rect.y
+                screen.blit(up_btn.image, (up_btn.rect.x, up_btn.rect.y))
+                visible.append(('up', up_btn))
             elif i == num_visible - 1 and (start_index + num_visible) < len(level_files):
-                btn.set_text('', font_size=1, color='black')
-                draw_arrow(btn.image, direction='down', color=(0, 0, 0))
-                visible_btns.append(('down', btn))
-            # Обычные кнопки уровней
+                down_btn.rect.y = btn.rect.y
+                screen.blit(down_btn.image, (down_btn.rect.x, down_btn.rect.y))
+                visible.append(('down', down_btn))
             elif idx < len(level_files):
-                btn.set_text(f'Уровень {idx+1}', font_size=32, color='black')
-                visible_btns.append(('level', btn, level_files[idx]))
-        # Кнопка назад
-        screen.blit(back_btn.image, (back_btn.rect.x, back_btn.rect.y))
-        # Рисуем кнопки
-        for item in visible_btns:
-            btn = item[1]
-            screen.blit(btn.image, (btn.rect.x, btn.rect.y))
+                if not is_pressed:
+                    btn.set_text(f'Уровень {idx+1}', font_size=32, color='black')
+                screen.blit(btn.image, (btn.rect.x, btn.rect.y))
+                visible.append(('level', btn, level_files[idx]))
         pg.display.flip()
 
         for event in pg.event.get():
@@ -76,14 +89,39 @@ def show_level_select_screen(set_active_screen, screen, clock):
                 running = False
                 return False
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                # Кнопка назад
                 if back_btn.rect.collidepoint(event.pos):
-                    set_active_screen('start')
-                    return True
-                # Кнопки меню
-                for item in visible_btns:
+                    back_btn.change_state()
+                    back_pressed = True
+                for item in visible:
                     btn = item[1]
                     if btn.rect.collidepoint(event.pos):
+                        btn.change_state()
+                        # Если это стрелка — перерисовать стрелку на новом image
+                        if item[0] == 'up':
+                            draw_arrow(btn.image, direction='up', color=(0, 0, 0))
+                        elif item[0] == 'down':
+                            draw_arrow(btn.image, direction='down', color=(0, 0, 0))
+                        pressed_btn = (item, btn)
+            if event.type == pg.MOUSEBUTTONUP and event.button == 1:
+                if back_pressed:
+                    if back_btn.rect.collidepoint(event.pos):
+                        back_btn.change_state()
+                        set_active_screen('start')
+                        return True
+                    else:
+                        back_btn.change_state()
+                    back_pressed = False
+                if pressed_btn:
+                    item, btn = pressed_btn
+                    if btn.rect.collidepoint(event.pos):
+                        btn.change_state()
+                        # Если это стрелка — перерисовать стрелку на новом image
+                        if item[0] == 'up':
+                            draw_arrow(btn.image, direction='up', color=(0, 0, 0))
+                        elif item[0] == 'down':
+                            draw_arrow(btn.image, direction='down', color=(0, 0, 0))
+                        pg.display.flip()
+                        time.sleep(0.12)
                         if item[0] == 'up':
                             start_index = max(0, start_index - 1)
                         elif item[0] == 'down':
@@ -92,4 +130,11 @@ def show_level_select_screen(set_active_screen, screen, clock):
                             set_current_level_path(os.path.join('..', 'assets', 'levels', item[2]))
                             set_active_screen('main')
                             return True
+                    else:
+                        btn.change_state()
+                        if item[0] == 'up':
+                            draw_arrow(btn.image, direction='up', color=(0, 0, 0))
+                        elif item[0] == 'down':
+                            draw_arrow(btn.image, direction='down', color=(0, 0, 0))
+                    pressed_btn = None
     return False 
