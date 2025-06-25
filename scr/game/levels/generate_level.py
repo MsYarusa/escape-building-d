@@ -1,6 +1,5 @@
 from random import randint
 
-from game.settings import SHADOW_COEF
 from game.entities import (
     BaseTile,
     BaseInteractableObject,
@@ -12,8 +11,10 @@ from game.entities import (
     BaseShadowOverlay,
     LostSoul,
     Cockroach,
-    Player
+    Player,
+    SimpleDoor
 )
+from game.settings import SHADOW_COEF
 
 
 def generate_level(level):
@@ -30,7 +31,7 @@ def generate_level(level):
             elif level[y][x] == '|':
                 BaseTile('floor_near_wall', x, y)
             elif level[y][x] == '0':
-                BaseInteractableObject('door', x, y)
+                SimpleDoor(x, y)
             elif level[y][x] == '#':
                 BaseTile('wall', x, y)
             elif level[y][x] == 'x':

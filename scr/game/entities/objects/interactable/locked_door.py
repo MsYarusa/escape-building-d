@@ -1,7 +1,7 @@
+from game.entities.objects.interactable import BaseInteractableObject
 from game.groups import player_group
 from game.resources import tile_images
-
-from game.entities.objects.interactable import BaseInteractableObject
+from game.utils.audio_manager import play_sound
 
 
 class LockedDoor(BaseInteractableObject):
@@ -16,8 +16,11 @@ class LockedDoor(BaseInteractableObject):
 
     def interact(self):
         if self.locked:
+            play_sound('door_closed')
             self.set_replica()
         else:
+            play_sound('door_open')
+
             for player in player_group:
 
                 if not player.info_collected[self.type]:

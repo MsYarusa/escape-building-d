@@ -1,3 +1,4 @@
+from game.entities.enemies import BaseEnemy
 from game.groups import player_group
 from game.settings import (
     TILE_WIDTH,
@@ -5,8 +6,6 @@ from game.settings import (
     SHADOW_WIDTH,
     SHADOW_HEIGHT
 )
-
-from game.entities.enemies import BaseEnemy
 
 
 class Cockroach(BaseEnemy):
@@ -27,12 +26,7 @@ class Cockroach(BaseEnemy):
         self.inner_rect.x = self.rect.x + self.rect.width // 8
         self.inner_rect.y = self.rect.y + self.rect.height // 4
 
-    def update(self, level, player_it):
-
-        player = None
-        for obj in player_group:
-            player = obj
-
+    def update(self, player, lighting_system, level, player_it):
         player_x = player.rect.centerx
         player_y = player.rect.centery
         soul_x = self.rect.centerx
@@ -93,6 +87,7 @@ class Cockroach(BaseEnemy):
             if not con1 and not con2:
                 self.inverse = False
 
+        super().update(player, lighting_system, level, player_it)
 
         self.image = self.frames[self.cur_frame]
         self.set_inner_rect()

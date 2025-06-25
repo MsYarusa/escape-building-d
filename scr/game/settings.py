@@ -31,6 +31,8 @@ LIGHT_BRIGHTNESS_BRIGHT = 0   # Полностью прозрачный
 LIGHT_BRIGHTNESS_DIM = 121    # Полупрозрачный
 LIGHT_BRIGHTNESS_DARK = 250   # Полностью непрозрачный
 
+MAX_AUDIBLE_DISTANCE = 400
+
 # Цвета
 BLACK = (0, 0, 0)
 

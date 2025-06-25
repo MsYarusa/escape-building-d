@@ -26,7 +26,7 @@ from game.settings import (
 )
 from game.systems import LightingSystem
 from game.ui import Hint, Replica, Button
-from game.utils.audio_manager import play_music, stop_music
+from game.utils.audio_manager import play_music, stop_music, play_sound
 
 
 def show_main_screen(set_active_screen, screen, clock):
@@ -147,8 +147,14 @@ def show_main_screen(set_active_screen, screen, clock):
         # Обновление игровой логики (только если не на паузе)
         if not paused:
             if player_it % 2 == 0:
+                # Обновляем игрока как обычно
                 player_group.update(level, player_it)
-                enemies_group.update(level, player_it)
+
+                # Обновляем врагов с помощью цикла, передавая все нужные аргументы
+                for enemy in enemies_group:
+                    enemy.update(player, lighting_system, level, player_it)
+
+                # Обновляем остальные группы как обычно
                 stairs_group.update(level)
                 vents_group.update(level)
                 keys_group.update(level)

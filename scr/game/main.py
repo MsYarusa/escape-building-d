@@ -6,7 +6,6 @@ from game.settings import WIN_SIZE, BLACK
 
 if __name__ == "__main__":
     pg.init()
-    pg.mixer.init()
 
     running = True
 

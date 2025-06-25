@@ -1,34 +1,34 @@
 import pygame as pg
-from typing import List, Tuple, Optional
 from enum import Enum
+from typing import List, Tuple, Optional
 
+from game.groups import shadow_overlay_group
 from game.settings import (
-    SHADOW_WIDTH, SHADOW_HEIGHT, TILE_WIDTH, TILE_HEIGHT, 
+    SHADOW_WIDTH, SHADOW_HEIGHT, TILE_WIDTH, TILE_HEIGHT,
     SHADOW_COEF, BLACK,
     LIGHT_RADIUS_BRIGHT, LIGHT_RADIUS_DIM,
     LIGHT_BRIGHTNESS_BRIGHT, LIGHT_BRIGHTNESS_DIM, LIGHT_BRIGHTNESS_DARK
 )
-from game.groups import shadow_overlay_group
 from game.utils.ray_tracer import RayTracer
 
 
 class LightLevel(Enum):
     """Уровни освещения для теневых элементов"""
     BRIGHT = LIGHT_BRIGHTNESS_BRIGHT  # Полностью освещенная область
-    DIM = LIGHT_BRIGHTNESS_DIM        # Полутень
-    DARK = LIGHT_BRIGHTNESS_DARK      # Полностью темная область
+    DIM = LIGHT_BRIGHTNESS_DIM  # Полутень
+    DARK = LIGHT_BRIGHTNESS_DARK  # Полностью темная область
 
 
 class LightingSystem:
     """Система освещения и теней для игры"""
-    
+
     def __init__(self):
         self._light_radius_bright = LIGHT_RADIUS_BRIGHT
         self._light_radius_dim = LIGHT_RADIUS_DIM
         self._last_player_pos: Optional[Tuple[int, int]] = None
         self._visible_cells: set = set()
         self._player_grid_pos: Optional[Tuple[int, int]] = None
-    
+
     def update_lighting(self, player_pos: Tuple[int, int], level: List[str]) -> None:
         """
         Обновляет освещение на основе позиции игрока
@@ -77,6 +77,18 @@ class LightingSystem:
             else:
                 self._set_shadow_brightness(shadow_element, LightLevel.DIM)
 
+    def is_position_visible(self, grid_pos: Tuple[int, int]) -> bool:
+        """
+        Проверяет, находится ли ячейка сетки в видимой области.
+
+        Args:
+            grid_pos: Координаты в сетке теней (x, y)
+
+        Returns:
+            True, если ячейка видна.
+        """
+        return grid_pos in self._visible_cells
+
     def _distance(self, pos1: Tuple[int, int], pos2: Tuple[int, int]) -> float:
         """Евклидово расстояние между двумя точками сетки теней"""
         return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2) ** 0.5
@@ -94,4 +106,4 @@ class LightingSystem:
     def clear_cache(self) -> None:
         """Сброс состояния освещения"""
         self._visible_cells = set()
-        self._player_grid_pos = None 
+        self._player_grid_pos = None

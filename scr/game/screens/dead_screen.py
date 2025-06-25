@@ -6,6 +6,8 @@ from game.settings import WIN_WIDTH, WIN_HEIGHT
 
 from game.ui import Button
 
+from game.utils.audio_manager import play_sound
+
 
 def show_dead_screen(set_active_screen, screen, clock):
     screen.blit(load_image(
@@ -28,6 +30,8 @@ def show_dead_screen(set_active_screen, screen, clock):
     restart_btn = Button(restart_pos, 'btn')
     restart_btn.scale(btn_size)
     restart_btn.set_text('Бросить вызов еще раз', font_size=40)
+
+    play_sound('lose')
 
     restart = False
     menu = False
