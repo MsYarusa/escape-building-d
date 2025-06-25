@@ -67,10 +67,9 @@ def generate_level(level):
     for pos in exit_positions:
         Stairs(*pos)
 
-    # Случайная дверь
     if door_candidates:
         door_pos = choice(door_candidates)
-        BaseInteractableObject('door', *door_pos)
+        Stairs(*door_pos)
 
     # Парсим секцию сущностей
     entities = {}
@@ -82,6 +81,11 @@ def generate_level(level):
             entities[entity] = []
         entities[entity].append(tuple(map(int, pos)))
 
+    if 'door' in entities:
+        for pos in entities['door']:
+            BaseInteractableObject('door', *pos)
+    
+    
     if 'locked_door' in entities:
         numbers = []
         for pos in entities['locked_door']:
@@ -116,7 +120,6 @@ def generate_level(level):
         for x in range(width * SHADOW_COEF):
             BaseShadowOverlay(x, y)
 
-    # Теперь создаём игрока только после всех остальных объектов
     new_player = None
     if player_spawns:
         spawn = choice(player_spawns)
