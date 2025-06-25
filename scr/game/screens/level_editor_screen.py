@@ -37,7 +37,7 @@ def show_level_editor_screen(set_active_screen, screen, clock):
 
     # Начальные размеры сетки
     grid_rows = 20
-    grid_cols = 40
+    grid_cols = 20
     grid = [['.' for _ in range(grid_cols)] for _ in range(grid_rows)]
 
     selected_tile = 0
@@ -95,27 +95,39 @@ def show_level_editor_screen(set_active_screen, screen, clock):
                 name_text = panel_font.render(name, True, (255, 255, 255))
                 screen.blit(name_text, (rect.x + 60, rect.y + 5))
 
-        # Компактные кнопки изменения размера
+        # Компактный блок изменения размеров (W/H)
+        size_font = pg.font.SysFont('calibry', 26, bold=True)
         btn_font = pg.font.SysFont('calibry', 22)
-        size_y = 350
-        # Строки
-        screen.blit(btn_font.render('Строк:', True, (255,255,255)), (panel_x + 30, size_y))
-        minus_row = pg.Rect(panel_x + 100, size_y, 28, 28)
-        plus_row = pg.Rect(panel_x + 140, size_y, 28, 28)
-        pg.draw.rect(screen, (120,120,120), minus_row, border_radius=6)
-        pg.draw.rect(screen, (120,120,120), plus_row, border_radius=6)
-        screen.blit(btn_font.render('-', True, (0,0,0)), (minus_row.x+7, minus_row.y+2))
-        screen.blit(btn_font.render('+', True, (0,0,0)), (plus_row.x+7, plus_row.y+2))
-        screen.blit(btn_font.render(str(grid_rows), True, (255,255,255)), (panel_x + 180, size_y+2))
-        # Столбцы
-        screen.blit(btn_font.render('Столбцы:', True, (255,255,255)), (panel_x + 30, size_y+40))
-        minus_col = pg.Rect(panel_x + 130, size_y+40, 28, 28)
-        plus_col = pg.Rect(panel_x + 170, size_y+40, 28, 28)
-        pg.draw.rect(screen, (120,120,120), minus_col, border_radius=6)
-        pg.draw.rect(screen, (120,120,120), plus_col, border_radius=6)
-        screen.blit(btn_font.render('-', True, (0,0,0)), (minus_col.x+7, minus_col.y+2))
-        screen.blit(btn_font.render('+', True, (0,0,0)), (plus_col.x+7, plus_col.y+2))
-        screen.blit(btn_font.render(str(grid_cols), True, (255,255,255)), (panel_x + 210, size_y+42))
+        size_block_y = 350
+        center_x = panel_x + PANEL_WIDTH // 2
+        # W (ширина)
+        w_label = size_font.render('W:', True, (255,255,255))
+        w_label_rect = w_label.get_rect()
+        w_label_rect.midleft = (panel_x + 30, size_block_y + 10)
+        screen.blit(w_label, w_label_rect)
+        minus_w = pg.Rect(center_x - 45, size_block_y, 28, 28)
+        plus_w = pg.Rect(center_x + 45, size_block_y, 28, 28)
+        pg.draw.rect(screen, (120,120,120), minus_w, border_radius=6)
+        pg.draw.rect(screen, (120,120,120), plus_w, border_radius=6)
+        screen.blit(btn_font.render('-', True, (0,0,0)), (minus_w.x+7, minus_w.y+2))
+        screen.blit(btn_font.render('+', True, (0,0,0)), (plus_w.x+7, plus_w.y+2))
+        w_val = size_font.render(str(grid_cols), True, (255,255,255))
+        w_val_rect = w_val.get_rect(center=(center_x, size_block_y+14))
+        screen.blit(w_val, w_val_rect)
+        # H (высота)
+        h_label = size_font.render('H:', True, (255,255,255))
+        h_label_rect = h_label.get_rect()
+        h_label_rect.midleft = (panel_x + 30, size_block_y + 50)
+        screen.blit(h_label, h_label_rect)
+        minus_h = pg.Rect(center_x - 45, size_block_y+40, 28, 28)
+        plus_h = pg.Rect(center_x + 45, size_block_y+40, 28, 28)
+        pg.draw.rect(screen, (120,120,120), minus_h, border_radius=6)
+        pg.draw.rect(screen, (120,120,120), plus_h, border_radius=6)
+        screen.blit(btn_font.render('-', True, (0,0,0)), (minus_h.x+7, minus_h.y+2))
+        screen.blit(btn_font.render('+', True, (0,0,0)), (plus_h.x+7, plus_h.y+2))
+        h_val = size_font.render(str(grid_rows), True, (255,255,255))
+        h_val_rect = h_val.get_rect(center=(center_x, size_block_y+54))
+        screen.blit(h_val, h_val_rect)
 
         # Кнопки управления
         btn_font2 = pg.font.SysFont('calibry', 28)
@@ -225,19 +237,19 @@ def show_level_editor_screen(set_active_screen, screen, clock):
                                 entities = [e for e in entities if not (e[1] == grid_row and e[2] == grid_col)]
                 # Кнопки управления размером
                 if event.button == 1:
-                    if minus_row.collidepoint(mx, my) and grid_rows > MIN_ROWS:
+                    if minus_h.collidepoint(mx, my) and grid_rows > MIN_ROWS:
                         grid_rows -= 1
                         grid = [row for i, row in enumerate(grid) if i < grid_rows]
                         entities = [e for e in entities if e[1] < grid_rows]
-                    if plus_row.collidepoint(mx, my) and grid_rows < MAX_ROWS:
+                    if plus_h.collidepoint(mx, my) and grid_rows < MAX_ROWS:
                         grid_rows += 1
                         grid.append(['.' for _ in range(grid_cols)])
-                    if minus_col.collidepoint(mx, my) and grid_cols > MIN_COLS:
+                    if minus_w.collidepoint(mx, my) and grid_cols > MIN_COLS:
                         grid_cols -= 1
                         for row in grid:
                             del row[-1]
                         entities = [e for e in entities if e[2] < grid_cols]
-                    if plus_col.collidepoint(mx, my) and grid_cols < MAX_COLS:
+                    if plus_w.collidepoint(mx, my) and grid_cols < MAX_COLS:
                         grid_cols += 1
                         for row in grid:
                             row.append('.')
