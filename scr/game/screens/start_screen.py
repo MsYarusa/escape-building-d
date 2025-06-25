@@ -1,14 +1,13 @@
 import pygame as pg
 import time
 
-from game.utils.images import load_image
 from game.settings import WIN_WIDTH
-
 from game.ui import Button
+from game.utils.audio_manager import play_music
+from game.utils.images import load_image
 
 
 def show_start_screen(set_active_screen, screen, clock):
-
     screen.blit(load_image(
         '..\\assets\\images\\ui\\background.png'), (0, 0))
 
@@ -30,6 +29,8 @@ def show_start_screen(set_active_screen, screen, clock):
     select_btn = Button(select_pos, 'btn')
     select_btn.scale(btn_size)
     select_btn.set_text('Выбор уровня', font_size=40)
+
+    play_music('menu')
 
     start = False
     select = False

@@ -81,3 +81,9 @@ replicas = {
     'cockroach': ['ОГРОМНЫЙ таракан!!!', 'Хмм.. Кажется он не заинтересован во мне',
                   'Но все равно думаю лучше его не касаться']
 }
+
+
+music_paths = {
+    'menu': '..\\assets\\audio\\music\\menu_music.mp3',
+    'game': '..\\assets\\audio\\music\\game_music.mp3'
+}
