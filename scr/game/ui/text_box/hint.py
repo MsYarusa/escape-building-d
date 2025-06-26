@@ -6,8 +6,8 @@ from game.ui.text_box import BaseTextBox
 
 
 class Hint(BaseTextBox):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, screen):
+        super().__init__(screen)
         self.font = pg.font.SysFont('cambria', 18)
 
     def hide(self):

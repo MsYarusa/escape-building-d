@@ -1,5 +1,5 @@
 import pygame as pg
-from game.settings import WIN_WIDTH, WIN_HEIGHT, BLACK
+from game.settings import BLACK
 from game.ui import Button
 from game.ui.slider import Slider
 from game.settings_manager import settings_manager
@@ -13,27 +13,32 @@ def show_settings_screen(set_active_screen, screen, clock, source_screen='start'
     else:
         static_background = None
 
-    overlay = pg.Surface((WIN_WIDTH, WIN_HEIGHT))
+    overlay = pg.Surface((screen.get_width(), screen.get_height()))
     overlay.fill(BLACK)
     overlay.set_alpha(200)
 
-    font_title = pg.font.SysFont('calibry', 56)
-    font_label = pg.font.SysFont('calibry', 36)
-    title = font_title.render('Настройки', True, (255, 255, 255))
-    title_rect = title.get_rect(center=(WIN_WIDTH // 2, 100))
+    def render_screen():
+        font_title = pg.font.SysFont('calibry', 56)
+        font_label = pg.font.SysFont('calibry', 36)
+        title = font_title.render('Настройки', True, (255, 255, 255))
+        title_rect = title.get_rect(center=(screen.get_width() // 2, 100))
 
-    music_label = font_label.render('Громкость музыки', True, (255, 255, 255))
-    sfx_label = font_label.render('Громкость эффектов', True, (255, 255, 255))
+        music_label = font_label.render('Громкость музыки', True, (255, 255, 255))
+        sfx_label = font_label.render('Громкость эффектов', True, (255, 255, 255))
 
-    slider_width = 400
-    music_slider = Slider((WIN_WIDTH // 2 - slider_width // 2, 220), (slider_width, 20),
-                          settings_manager.music_volume, 0, 1)
-    sfx_slider = Slider((WIN_WIDTH // 2 - slider_width // 2, 320), (slider_width, 20),
-                        settings_manager.sfx_volume, 0, 1)
+        slider_width = 400
+        music_slider = Slider((screen.get_width() // 2 - slider_width // 2, 220), (slider_width, 20),
+                              settings_manager.music_volume, 0, 1)
+        sfx_slider = Slider((screen.get_width() // 2 - slider_width // 2, 320), (slider_width, 20),
+                            settings_manager.sfx_volume, 0, 1)
 
-    back_btn = Button((WIN_WIDTH // 2 - 150, 450), 'btn')
-    back_btn.scale((300, 70))
-    back_btn.set_text('Назад', font_size=36)
+        back_btn = Button((screen.get_width() // 2 - 150, 450), 'btn')
+        back_btn.scale((300, 70))
+        back_btn.set_text('Назад', font_size=36)
+
+        return title, title_rect, music_label, sfx_label, music_slider, sfx_slider, back_btn
+
+    title, title_rect, music_label, sfx_label, music_slider, sfx_slider, back_btn = render_screen()
 
     running = True
     while running:
@@ -74,4 +79,6 @@ def show_settings_screen(set_active_screen, screen, clock, source_screen='start'
                     else:
                         set_active_screen(source_screen)
                         return True  # Возвращаемся в главное меню
+            if event.type == pg.VIDEORESIZE:
+                title, title_rect, music_label, sfx_label, music_slider, sfx_slider, back_btn = render_screen()
     return True

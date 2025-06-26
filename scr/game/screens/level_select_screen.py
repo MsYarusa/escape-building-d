@@ -1,11 +1,12 @@
 import pygame as pg
 import os
 import time
-from game.settings import WIN_WIDTH, WIN_HEIGHT, BLACK
+from game.settings import BLACK
 from game.ui import Button
 from game.level_state import set_current_level_path
 from game.utils.images import load_image
 from game.progress_manager import progress_manager
+
 
 def draw_arrow(surface, direction='up', color=(0, 0, 0)):
     w, h = surface.get_size()
@@ -14,6 +15,7 @@ def draw_arrow(surface, direction='up', color=(0, 0, 0)):
     else:  # 'down'
         points = [(w // 2, 2 * h // 3), (16 * w // 40, h // 3), (24 * w // 40, h // 3)]
     pg.draw.polygon(surface, color, points)
+
 
 def show_level_select_screen(set_active_screen, screen, clock):
     background = load_image('..\\assets\\images\\ui\\background.png')
@@ -24,38 +26,43 @@ def show_level_select_screen(set_active_screen, screen, clock):
     start_index = 0
 
     btn_size = (400, 70)
-    gap = 20
     start_y = 180
+    gap = 20
 
-    # Кнопка назад
-    back_btn = Button((30, 30), 'btn')
-    back_btn.scale((180, 60))
-    back_btn.set_text('Назад', font_size=28, color='black')
+    def render_screen():
+        # Кнопка назад
+        back_btn = Button((30, 30), 'btn')
+        back_btn.scale((180, 60))
+        back_btn.set_text('Назад', font_size=28, color='black')
 
-    font = pg.font.SysFont('calibry', 48)
-    title = font.render('Выберите уровень', True, (255, 255, 255))
-    title_rect = title.get_rect(center=(WIN_WIDTH // 2, 100))
+        font = pg.font.SysFont('calibry', 48)
+        title = font.render('Выберите уровень', True, (255, 255, 255))
+        title_rect = title.get_rect(center=(screen.get_width() // 2, 100))
 
-    # Создаём кнопки уровней и стрелок один раз
-    level_btns = []
-    for i in range(num_visible):
-        pos = (WIN_WIDTH // 2 - btn_size[0] // 2, start_y + i * (btn_size[1] + gap))
-        btn = Button(pos, 'btn')
-        btn.scale(btn_size)
-        level_btns.append(btn)
-    up_btn = Button(level_btns[0].pos, 'btn')
-    up_btn.scale(btn_size)
-    up_btn.set_text('', font_size=1, color='black')
-    draw_arrow(up_btn.image, direction='up', color=(0, 0, 0))
-    down_btn = Button(level_btns[-1].pos, 'btn')
-    down_btn.scale(btn_size)
-    down_btn.set_text('', font_size=1, color='black')
-    draw_arrow(down_btn.image, direction='down', color=(0, 0, 0))
+        # Создаём кнопки уровней и стрелок один раз
+        level_btns = []
+        for i in range(num_visible):
+            pos = (screen.get_width() // 2 - btn_size[0] // 2, start_y + i * (btn_size[1] + gap))
+            btn = Button(pos, 'btn')
+            btn.scale(btn_size)
+            level_btns.append(btn)
+        up_btn = Button(level_btns[0].pos, 'btn')
+        up_btn.scale(btn_size)
+        up_btn.set_text('', font_size=1, color='black')
+        draw_arrow(up_btn.image, direction='up', color=(0, 0, 0))
+        down_btn = Button(level_btns[-1].pos, 'btn')
+        down_btn.scale(btn_size)
+        down_btn.set_text('', font_size=1, color='black')
+        draw_arrow(down_btn.image, direction='down', color=(0, 0, 0))
 
-    # Кнопка "Создать уровень"
-    create_level_btn = Button((WIN_WIDTH - (180 + 30), 30), 'btn')
-    create_level_btn.scale((200, 60))
-    create_level_btn.set_text('Создать уровень', font_size=32, color='black')
+        # Кнопка "Создать уровень"
+        create_level_btn = Button((screen.get_width() - (180 + 30), 30), 'btn')
+        create_level_btn.scale((200, 60))
+        create_level_btn.set_text('Создать уровень', font_size=32, color='black')
+
+        return back_btn, up_btn, down_btn, create_level_btn, level_btns, title, title_rect
+
+    back_btn, up_btn, down_btn, create_level_btn, level_btns, title, title_rect = render_screen()
 
     running = True
     back_pressed = False
@@ -158,4 +165,7 @@ def show_level_select_screen(set_active_screen, screen, clock):
                     progress_manager.unlock_all()
                 if event.key == pg.K_r and (mods & pg.KMOD_CTRL) and (mods & pg.KMOD_SHIFT):
                     progress_manager.reset_progress()
-    return False 
+            if event.type == pg.VIDEORESIZE:
+                back_btn, up_btn, down_btn, create_level_btn, level_btns, title, title_rect = render_screen()
+
+    return False

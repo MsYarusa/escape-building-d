@@ -1,15 +1,15 @@
 import pygame as pg
 
 from game.groups import text_boxes_group
-from game.settings import WIN_WIDTH, TILE_WIDTH, TILE_HEIGHT, WIN_HEIGHT
+from game.settings import TILE_WIDTH, TILE_HEIGHT
 
 
 class BaseTextBox(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, screen):
         super().__init__(text_boxes_group)
         self.text = ''
-        self.size = (WIN_WIDTH - 4 * TILE_WIDTH, TILE_HEIGHT * 3)
-        self.pos = (TILE_WIDTH * 2, WIN_HEIGHT - TILE_HEIGHT * 3)
+        self.size = (min(screen.get_width() - 4 * TILE_WIDTH, 10 * TILE_WIDTH), TILE_HEIGHT * 3)
+        self.pos = (screen.get_width() // 2 - self.size[0] // 2, screen.get_height() - TILE_HEIGHT * 3)
         self.rect = pg.Rect(*self.pos, *self.size)
         self.image = pg.Surface(self.size)
 

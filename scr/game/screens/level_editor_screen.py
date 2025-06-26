@@ -1,5 +1,5 @@
 import pygame as pg
-from game.settings import WIN_WIDTH, WIN_HEIGHT, BLACK
+from game.settings import BLACK
 import os
 
 # Максимальные размеры сетки
@@ -36,14 +36,25 @@ ENTITY_PARAMS = {
 }
 
 PANEL_WIDTH = 220
-GRID_AREA_WIDTH = WIN_WIDTH - PANEL_WIDTH - 40  # 40px отступ слева
-GRID_AREA_HEIGHT = WIN_HEIGHT - 100  # 100px отступ сверху/снизу
-
 
 def show_level_editor_screen(set_active_screen, screen, clock):
     font = pg.font.SysFont('calibry', 36)
-    title = font.render('Редактор уровней', True, (255, 255, 255))
-    title_rect = title.get_rect(center=(WIN_WIDTH // 2, 30))
+
+    def render_title():
+        title = font.render('Редактор уровней', True, (255, 255, 255))
+        title_rect = title.get_rect(center=(screen.get_width() // 2, 30))
+
+        return title, title_rect
+
+    def update_grid_area():
+        grid_area_width = screen.get_width() - PANEL_WIDTH - 40  # 40px отступ слева
+        grid_area_height = screen.get_height() - 100  # 100px отступ сверху/снизу
+
+        return grid_area_width, grid_area_height
+
+    grid_area_width, grid_area_height = update_grid_area()
+
+    title, title_rect = render_title()
 
     # Начальные размеры сетки
     grid_rows = 20
@@ -81,8 +92,8 @@ def show_level_editor_screen(set_active_screen, screen, clock):
         screen.blit(title, title_rect)
 
         # Панель справа
-        panel_x = WIN_WIDTH - PANEL_WIDTH
-        pg.draw.rect(screen, (40, 40, 40), (panel_x, 0, PANEL_WIDTH, WIN_HEIGHT))
+        panel_x = screen.get_width() - PANEL_WIDTH
+        pg.draw.rect(screen, (40, 40, 40), (panel_x, 0, PANEL_WIDTH, screen.get_height()))
         panel_font = pg.font.SysFont('calibry', 28)
 
         # Кнопки разделов
@@ -153,9 +164,9 @@ def show_level_editor_screen(set_active_screen, screen, clock):
 
         # Кнопки управления
         btn_font2 = pg.font.SysFont('calibry', 28)
-        save_btn = pg.Rect(panel_x + 30, WIN_HEIGHT - 160, 160, 40)
-        clear_btn = pg.Rect(panel_x + 30, WIN_HEIGHT - 110, 160, 40)
-        back_btn = pg.Rect(panel_x + 30, WIN_HEIGHT - 60, 160, 40)
+        save_btn = pg.Rect(panel_x + 30, screen.get_height() - 160, 160, 40)
+        clear_btn = pg.Rect(panel_x + 30, screen.get_height() - 110, 160, 40)
+        back_btn = pg.Rect(panel_x + 30, screen.get_height() - 60, 160, 40)
         pg.draw.rect(screen, (80, 180, 80), save_btn)
         pg.draw.rect(screen, (180, 80, 80), clear_btn)
         pg.draw.rect(screen, (80, 80, 180), back_btn)
@@ -166,8 +177,8 @@ def show_level_editor_screen(set_active_screen, screen, clock):
         # Окно для ввода имени файла при сохранении
         if save_input_active:
             popup_w, popup_h = 340, 100
-            popup_x = WIN_WIDTH // 2 - popup_w // 2
-            popup_y = WIN_HEIGHT // 2 - popup_h // 2
+            popup_x = screen.get_width() // 2 - popup_w // 2
+            popup_y = screen.get_height() // 2 - popup_h // 2
             popup_rect = pg.Rect(popup_x, popup_y, popup_w, popup_h)
             pg.draw.rect(screen, (30,30,30), popup_rect, border_radius=10)
             pg.draw.rect(screen, (80,180,80), popup_rect, 2, border_radius=10)
@@ -181,13 +192,13 @@ def show_level_editor_screen(set_active_screen, screen, clock):
         # Сообщение об успешном сохранении
         if save_message:
             msg_font = pg.font.SysFont('calibry', 26, bold=True)
-            msg_rect = pg.Rect(WIN_WIDTH//2-120, WIN_HEIGHT//2-30, 240, 60)
+            msg_rect = pg.Rect(screen.get_width()//2-120, screen.get_height()//2-30, 240, 60)
             pg.draw.rect(screen, (30,120,30), msg_rect, border_radius=10)
             screen.blit(msg_font.render(save_message, True, (255,255,255)), (msg_rect.x+20, msg_rect.y+15))
 
         # Сетка (только видимая часть)
-        max_visible_cols = GRID_AREA_WIDTH // TILE_SIZE
-        max_visible_rows = GRID_AREA_HEIGHT // TILE_SIZE
+        max_visible_cols = grid_area_width // TILE_SIZE
+        max_visible_rows = grid_area_height // TILE_SIZE
         grid_x0 = 20
         grid_y0 = 70
         # Нумерация столбцов (W)
@@ -254,10 +265,10 @@ def show_level_editor_screen(set_active_screen, screen, clock):
             param_h = 32 * len(param_list) + 36
             popup_x = x + TILE_SIZE + 8
             popup_y = y
-            if popup_x + param_w > WIN_WIDTH - PANEL_WIDTH:
+            if popup_x + param_w > screen.get_width() - PANEL_WIDTH:
                 popup_x = x - param_w - 8
-            if popup_y + param_h > WIN_HEIGHT:
-                popup_y = WIN_HEIGHT - param_h - 8
+            if popup_y + param_h > screen.get_height():
+                popup_y = screen.get_height() - param_h - 8
             popup_rect = pg.Rect(popup_x-2, popup_y-2, param_w+4, param_h+4)
             pg.draw.rect(screen, (30,30,30), popup_rect, border_radius=10)
             pg.draw.rect(screen, (255,255,0), popup_rect, 2, border_radius=10)
@@ -309,6 +320,8 @@ def show_level_editor_screen(set_active_screen, screen, clock):
             if event.type == pg.QUIT:
                 running = False
                 return False
+            if event.type == pg.VIDEORESIZE:
+                title, title_rect = render_title()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     set_active_screen('level_select')
@@ -345,10 +358,10 @@ def show_level_editor_screen(set_active_screen, screen, clock):
                                 param_h = 32 * len(param_list) + 36
                                 popup_x = x + TILE_SIZE + 8
                                 popup_y = y
-                                if popup_x + param_w > WIN_WIDTH - PANEL_WIDTH:
+                                if popup_x + param_w > screen.get_width() - PANEL_WIDTH:
                                     popup_x = x - param_w - 8
-                                if popup_y + param_h > WIN_HEIGHT:
-                                    popup_y = WIN_HEIGHT - param_h - 8
+                                if popup_y + param_h > screen.get_height():
+                                    popup_y = screen.get_height() - param_h - 8
                                 for i, (pname, ptype) in enumerate(param_list):
                                     val_rect = pg.Rect(popup_x+70, popup_y+30 + i*28, 90, 24)
                                     if val_rect.collidepoint(mx, my):

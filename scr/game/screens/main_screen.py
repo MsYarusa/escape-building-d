@@ -20,8 +20,6 @@ from game.progress_manager import progress_manager
 from game.screens.end_level_screen import show_end_level_screen
 from game.screens.settings_screen import show_settings_screen
 from game.settings import (
-    WIN_WIDTH,
-    WIN_HEIGHT,
     TILE_WIDTH,
     TILE_HEIGHT,
     BLACK,
@@ -42,25 +40,33 @@ def show_main_screen(set_active_screen, screen, clock):
         Отрисовывает и обрабатывает меню паузы с корректной логикой кнопок.
         """
         game_background = screen.copy()
-        overlay = pg.Surface((WIN_WIDTH, WIN_HEIGHT))
+        overlay = pg.Surface((screen.get_width(), screen.get_height()))
         overlay.fill(BLACK)
         overlay.set_alpha(180)
-        font_title = pg.font.SysFont('calibry', 60, bold=True)
-        title = font_title.render('Пауза', True, (255, 255, 255))
-        title_rect = title.get_rect(center=(WIN_WIDTH // 2, 150))
-        btn_size = (320, 70)
-        continue_btn = Button((WIN_WIDTH // 2 - btn_size[0] // 2, 250), 'btn')
-        continue_btn.scale(btn_size)
-        continue_btn.set_text('Продолжить', font_size=36)
-        settings_btn = Button((WIN_WIDTH // 2 - btn_size[0] // 2, 340), 'btn')
-        settings_btn.scale(btn_size)
-        settings_btn.set_text('Настройки', font_size=36)
-        exit_btn = Button((WIN_WIDTH // 2 - btn_size[0] // 2, 430), 'btn')
-        exit_btn.scale(btn_size)
-        exit_btn.set_text('Выйти в меню', font_size=36)
-        buttons = [continue_btn, settings_btn, exit_btn]
+
+        def render_pause_menu():
+            font_title = pg.font.SysFont('calibry', 60, bold=True)
+            title = font_title.render('Пауза', True, (255, 255, 255))
+            title_rect = title.get_rect(center=(screen.get_width() // 2, 150))
+            btn_size = (320, 70)
+            continue_btn = Button((screen.get_width() // 2 - btn_size[0] // 2, 250), 'btn')
+            continue_btn.scale(btn_size)
+            continue_btn.set_text('Продолжить', font_size=36)
+            settings_btn = Button((screen.get_width() // 2 - btn_size[0] // 2, 340), 'btn')
+            settings_btn.scale(btn_size)
+            settings_btn.set_text('Настройки', font_size=36)
+            exit_btn = Button((screen.get_width() // 2 - btn_size[0] // 2, 430), 'btn')
+            exit_btn.scale(btn_size)
+            exit_btn.set_text('Выйти в меню', font_size=36)
+            buttons = [continue_btn, settings_btn, exit_btn]
+
+            return title, title_rect, buttons, continue_btn, settings_btn, exit_btn
+
+        title, title_rect, buttons, continue_btn, settings_btn, exit_btn = render_pause_menu()
+
         pressed_button = None
         paused_loop = True
+
         while paused_loop:
             screen.blit(game_background, (0, 0))
             screen.blit(overlay, (0, 0))
@@ -79,6 +85,8 @@ def show_main_screen(set_active_screen, screen, clock):
                             btn.change_state()
                             pressed_button = btn
                             break
+                if event.type == pg.VIDEORESIZE:
+                    title, title_rect, buttons, continue_btn, settings_btn, exit_btn = render_pause_menu()
                 if event.type == pg.MOUSEBUTTONUP and event.button == 1:
                     if pressed_button:
                         if pressed_button.rect.collidepoint(event.pos):
@@ -101,9 +109,19 @@ def show_main_screen(set_active_screen, screen, clock):
     play_music('game')
     camera = Camera(len(level[0]) * TILE_WIDTH, len(level) * TILE_HEIGHT)
     lighting_system = LightingSystem()
-    hint = Hint()
-    replica = Replica()
-    replica.add(replica_group)
+
+    def render_text_boxes():
+        text_boxes_group.empty()
+        replica_group.empty()
+
+        hint = Hint(screen)
+        replica = Replica(screen)
+        replica.add(replica_group)
+
+        return hint, replica
+
+    hint, replica = render_text_boxes()
+
     player_it = 0
     running = True
     paused = False
@@ -139,6 +157,8 @@ def show_main_screen(set_active_screen, screen, clock):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            if event.type == pg.VIDEORESIZE:
+                hint, replica = render_text_boxes()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     paused = True
@@ -178,7 +198,7 @@ def show_main_screen(set_active_screen, screen, clock):
         else:
             hint.hide()
         lighting_system.update_lighting(player.get_position(), level)
-        camera.update(player)
+        camera.update(player, screen)
         hint.update()
         replica.update()
         screen.fill(BLACK)

@@ -4,7 +4,7 @@ from game.screens import (
     show_start_screen, show_end_screen, show_dead_screen, show_main_screen,
     show_level_select_screen, show_level_editor_screen, show_settings_screen
 )
-from game.settings import WIN_SIZE, BLACK
+from game.settings import BASE_WIN_SIZE, BLACK
 
 if __name__ == "__main__":
     pg.init()
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
 
     pg.display.set_caption('Лабиринт')
-    screen = pg.display.set_mode(WIN_SIZE)
+    screen = pg.display.set_mode(BASE_WIN_SIZE, pg.RESIZABLE)
     clock = pg.time.Clock()
 
     running = True

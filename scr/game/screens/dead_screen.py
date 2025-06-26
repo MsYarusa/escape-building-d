@@ -2,7 +2,6 @@ import pygame as pg
 import time
 
 from game.utils.images import load_image
-from game.settings import WIN_WIDTH, WIN_HEIGHT
 
 from game.ui import Button
 
@@ -10,26 +9,32 @@ from game.utils.audio_manager import play_sound
 
 
 def show_dead_screen(set_active_screen, screen, clock):
-    screen.blit(load_image(
-        '..\\assets\\images\\ui\\background.png'), (0, 0))
 
-    label_font = pg.font.SysFont('calibry', 60)
-    text_rendered = label_font.render('D корпус поглотил Вас!', 0, pg.Color('white'))
-    text_rect = text_rendered.get_rect()
-    text_rect.centerx = WIN_WIDTH // 2
-    text_rect.centery = 200
-    screen.blit(text_rendered, text_rect)
+    def render_screen():
+        screen.blit(load_image(
+            '..\\assets\\images\\ui\\background.png'), (0, 0))
 
-    btn_size = (400, 80)
-    menu_pos = (WIN_WIDTH // 2 - btn_size[0] // 2, WIN_HEIGHT // 2 - btn_size[1] // 2)
-    menu_btn = Button(menu_pos, 'btn')
-    menu_btn.scale(btn_size)
-    menu_btn.set_text('Начальный экран', font_size=40)
+        label_font = pg.font.SysFont('calibry', 60)
+        text_rendered = label_font.render('D корпус поглотил Вас!', 0, pg.Color('white'))
+        text_rect = text_rendered.get_rect()
+        text_rect.centerx = screen.get_width() // 2
+        text_rect.centery = 200
+        screen.blit(text_rendered, text_rect)
 
-    restart_pos = (menu_pos[0], menu_pos[1] + btn_size[1] + 20)
-    restart_btn = Button(restart_pos, 'btn')
-    restart_btn.scale(btn_size)
-    restart_btn.set_text('Бросить вызов еще раз', font_size=40)
+        btn_size = (400, 80)
+        menu_pos = (screen.get_width() // 2 - btn_size[0] // 2, screen.get_height() // 2 - btn_size[1] // 2)
+        menu_btn = Button(menu_pos, 'btn')
+        menu_btn.scale(btn_size)
+        menu_btn.set_text('Начальный экран', font_size=40)
+
+        restart_pos = (menu_pos[0], menu_pos[1] + btn_size[1] + 20)
+        restart_btn = Button(restart_pos, 'btn')
+        restart_btn.scale(btn_size)
+        restart_btn.set_text('Бросить вызов еще раз', font_size=40)
+
+        return menu_btn, restart_btn
+
+    menu_btn, restart_btn = render_screen()
 
     play_sound('lose')
 
@@ -41,6 +46,8 @@ def show_dead_screen(set_active_screen, screen, clock):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            if event.type == pg.VIDEORESIZE:
+                menu_btn, restart_btn = render_screen()
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                 if menu_btn.pressed(event.pos):
                     running = False
