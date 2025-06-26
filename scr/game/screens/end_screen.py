@@ -1,10 +1,9 @@
 import pygame as pg
 import time
 
-from game.utils.images import load_image
 from game.settings import WIN_WIDTH, WIN_HEIGHT
-
 from game.ui import Button
+from game.utils.images import load_image
 
 
 def show_end_screen(set_active_screen, screen, clock):

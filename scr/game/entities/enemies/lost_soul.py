@@ -1,13 +1,12 @@
 import pygame as pg
 
+from game.entities.enemies import BaseEnemy
 from game.groups import player_group, walls_group
 from game.settings import (
     TILE_WIDTH,
     SHADOW_WIDTH,
     SHADOW_HEIGHT
 )
-
-from game.entities.enemies import BaseEnemy
 
 
 class LostSoul(BaseEnemy):
@@ -28,22 +27,18 @@ class LostSoul(BaseEnemy):
         self.inner_rect.x = self.rect.x + self.rect.width // 4
         self.inner_rect.y = self.rect.y + 3 * self.rect.height // 8
 
-    def update(self, level, player_it):
+    def update(self, player, lighting_system, level, player_it):
 
         if player_it % 10 == 0:
             self.cur_frame = (self.cur_frame + 1) % 8 + self.step * 8
             self.image = self.frames[self.cur_frame]
-
-        player = None
-        for obj in player_group:
-            player = obj
 
         player_x = player.rect.centerx
         player_y = player.rect.centery
         soul_x = self.rect.centerx
         soul_y = self.rect.centery
 
-        dist = ((soul_x - player_x)**2 + (soul_y - player_y)**2)**(1/2)
+        dist = ((soul_x - player_x) ** 2 + (soul_y - player_y) ** 2) ** (1 / 2)
 
         if dist <= 3 * TILE_WIDTH and not player.info_collected[self.type]:
             player_pos = [player_x // SHADOW_WIDTH, player_y // SHADOW_HEIGHT]
@@ -69,6 +64,8 @@ class LostSoul(BaseEnemy):
         self.collide(x_delta, 0)
 
         self.set_inner_rect()
+
+        super().update(player, lighting_system, level, player_it)
 
     def collide(self, x_delta, y_delta):
         for wall in walls_group:

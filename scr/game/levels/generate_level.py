@@ -1,9 +1,7 @@
 from random import randint, choice
 
-from game.settings import SHADOW_COEF
 from game.entities import (
     BaseTile,
-    BaseInteractableObject,
     Stairs,
     LockedDoor,
     LockedDoorExit,
@@ -12,8 +10,10 @@ from game.entities import (
     BaseShadowOverlay,
     LostSoul,
     Cockroach,
-    Player
+    Player,
+    SimpleDoor
 )
+from game.settings import SHADOW_COEF
 
 
 def generate_level(level):
@@ -26,7 +26,7 @@ def generate_level(level):
 
     if entity_start is not None:
         map_lines = level[:entity_start]
-        entity_lines = level[entity_start+1:]
+        entity_lines = level[entity_start + 1:]
     else:
         map_lines = level
         entity_lines = []
@@ -45,20 +45,20 @@ def generate_level(level):
             match char:
                 case '@':
                     player_spawns.append((x, y))
-                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y - 1][x] == '#' else 'simple_floor'
                     BaseTile(tile_type, x, y)
                 case 'x':
                     exit_positions.append((x, y))
-                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y - 1][x] == '#' else 'simple_floor'
                     BaseTile(tile_type, x, y)
                 case '?':
                     door_candidates.append((x, y))
-                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y - 1][x] == '#' else 'simple_floor'
                     BaseTile(tile_type, x, y)
                 case '#':
                     BaseTile('wall', x, y)
                 case '.':
-                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y - 1][x] == '#' else 'simple_floor'
                     BaseTile(tile_type, x, y)
                 case _:
                     pass
@@ -83,9 +83,8 @@ def generate_level(level):
 
     if 'door' in entities:
         for pos in entities['door']:
-            BaseInteractableObject('door', *pos)
-    
-    
+            SimpleDoor(*pos)
+
     if 'locked_door' in entities:
         numbers = []
         for pos in entities['locked_door']:

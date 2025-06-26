@@ -1,7 +1,10 @@
 import pygame as pg
+
+from game.progress_manager import progress_manager
 from game.settings import WIN_WIDTH, WIN_HEIGHT, BLACK
 from game.ui import Button
-from game.progress_manager import progress_manager
+from game.utils.audio_manager import play_sound
+
 
 def show_end_level_screen(set_active_screen, screen, clock, current_level_idx):
     background = pg.Surface((WIN_WIDTH, WIN_HEIGHT))
@@ -23,6 +26,8 @@ def show_end_level_screen(set_active_screen, screen, clock, current_level_idx):
     exit_btn = Button(exit_pos, 'btn')
     exit_btn.scale(btn_size)
     exit_btn.set_text('Выйти', font_size=36)
+
+    play_sound('win')
 
     running = True
     while running:
@@ -46,4 +51,4 @@ def show_end_level_screen(set_active_screen, screen, clock, current_level_idx):
                     return None
                 if exit_btn.pressed(event.pos):
                     return False
-    return None 
+    return None

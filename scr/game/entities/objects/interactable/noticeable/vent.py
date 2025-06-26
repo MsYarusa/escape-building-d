@@ -1,6 +1,6 @@
-from game.groups import vents_group, player_group
-
 from game.entities.objects.interactable.noticeable import BaseNoticeableObject
+from game.groups import vents_group, player_group
+from game.utils.audio_manager import play_sound
 
 
 class Vent(BaseNoticeableObject):
@@ -13,6 +13,8 @@ class Vent(BaseNoticeableObject):
         self.pair = another
 
     def interact(self):
+        play_sound('vent')
+
         for player in player_group:
             player.rect.x = self.pair.rect.x
             player.rect.y = self.pair.rect.y

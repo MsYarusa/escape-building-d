@@ -1,6 +1,6 @@
-from game.groups import keys_group
-
 from game.entities.objects.interactable.noticeable import BaseNoticeableObject
+from game.groups import keys_group
+from game.utils.audio_manager import play_sound
 
 
 class Key(BaseNoticeableObject):
@@ -20,6 +20,8 @@ class Key(BaseNoticeableObject):
         self.door.info = 'Аудитория D' + str(number)
 
     def interact(self):
+        play_sound('raise_item')
+
         self.type = 'key_collected'
         self.set_replica()
         self.door.locked = False

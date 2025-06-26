@@ -1,8 +1,15 @@
 import pygame as pg
 from typing import Optional
 
+from game.groups import (
+    all_sprites_group,
+    player_group,
+    interactable_objects_group,
+    enemies_group,
+    walls_group
+)
 from game.resources import player_images
-from game.utils.images import cut_sheet, load_image
+from game.resources import sound_effects
 from game.settings import (
     TILE_WIDTH,
     TILE_HEIGHT,
@@ -11,13 +18,8 @@ from game.settings import (
     PLAYER_RECT_Y,
     PLAYER_SPEED
 )
-from game.groups import (
-    all_sprites_group,
-    player_group,
-    interactable_objects_group,
-    enemies_group,
-    walls_group
-)
+from game.utils.audio_manager import play_sound
+from game.utils.images import cut_sheet, load_image
 
 
 class Player(pg.sprite.Sprite):
@@ -31,7 +33,7 @@ class Player(pg.sprite.Sprite):
     - Взаимодействие с объектами
     - Проверку атак от врагов
     """
-    
+
     def __init__(self, pos_x: int, pos_y: int):
         """
         Инициализирует игрока.
@@ -56,17 +58,17 @@ class Player(pg.sprite.Sprite):
 
         # Основной прямоугольник для коллизий
         self.rect = pg.Rect(
-            pos_x * TILE_WIDTH + 6, 
-            pos_y * TILE_HEIGHT, 
-            PLAYER_RECT_X, 
+            pos_x * TILE_WIDTH + 6,
+            pos_y * TILE_HEIGHT,
+            PLAYER_RECT_X,
             PLAYER_RECT_Y
         )
-        
+
         # Внутренний прямоугольник для более точных коллизий
         self.inner_rect = pg.Rect(
-            self.rect.x, 
-            self.rect.y, 
-            PLAYER_RECT_X // 2, 
+            self.rect.x,
+            self.rect.y,
+            PLAYER_RECT_X // 2,
             PLAYER_RECT_Y // 2
         )
         self.set_inner_rect()
@@ -81,13 +83,17 @@ class Player(pg.sprite.Sprite):
             'locked_door': False,
             'unlocked_door': True
         }
-        
+
         # Состояние движения
         self.step = 0
         self.up = False
         self.down = False
         self.left = False
         self.right = False
+
+        # Хранит канал, на котором играет звук, чтобы мы могли его проверять.
+        self.footstep_channel = None
+        self.footstep_sound = sound_effects['footsteps']
 
     def set_inner_rect(self) -> None:
         """Обновляет позицию внутреннего прямоугольника для коллизий"""
@@ -152,9 +158,21 @@ class Player(pg.sprite.Sprite):
             y_delta += PLAYER_SPEED
             self.step = 0
 
+        is_moving = self.up or self.down or self.right or self.left
+
+        if is_moving:
+            # Проверяем, свободен ли канал для шагов.
+            # Он свободен, если он еще не был создан (None) ИЛИ если звук на нем уже доиграл (get_busy() == False).
+            if self.footstep_channel is None or not self.footstep_channel.get_busy():
+                # Если да - проигрываем звук и сохраняем новый канал.
+                self.footstep_channel = play_sound('footsteps')
+
         # Сброс анимации при отсутствии движения
-        if not (self.up or self.down or self.right or self.left):
+        if not is_moving:
             self.cur_frame = -1
+            if self.footstep_channel and self.footstep_channel.get_busy():
+                self.footstep_sound.fadeout(300)
+                self.footstep_channel = None
 
         # Применяем движение с проверкой коллизий
         self.rect.x += x_delta
