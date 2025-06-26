@@ -1,5 +1,6 @@
-import pygame as pg
 from typing import Optional
+
+import pygame as pg
 
 from game.groups import (
     all_sprites_group,
@@ -9,7 +10,6 @@ from game.groups import (
     walls_group
 )
 from game.resources import player_images
-from game.resources import sound_effects
 from game.settings import (
     TILE_WIDTH,
     TILE_HEIGHT,
@@ -18,14 +18,14 @@ from game.settings import (
     PLAYER_RECT_Y,
     PLAYER_SPEED
 )
-from game.utils.audio_manager import play_sound
-from game.utils.images import cut_sheet, load_image
+from game.utils.audio_manager import play_sound, fadeout_sound
+from game.utils.images import cut_sheet
 
 
 class Player(pg.sprite.Sprite):
     """
     Класс игрока, отвечающий за управление персонажем и игровую логику.
-    
+
     Включает в себя:
     - Движение персонажа
     - Анимацию
@@ -37,7 +37,7 @@ class Player(pg.sprite.Sprite):
     def __init__(self, pos_x: int, pos_y: int):
         """
         Инициализирует игрока.
-        
+
         Args:
             pos_x: X координата в тайлах
             pos_y: Y координата в тайлах
@@ -91,9 +91,9 @@ class Player(pg.sprite.Sprite):
         self.left = False
         self.right = False
 
-        # Хранит канал, на котором играет звук, чтобы мы могли его проверять.
-        self.footstep_channel = None
-        self.footstep_sound = sound_effects['footsteps']
+        # ИЗМЕНЕНИЕ: Хранит канал, на котором играет звук, чтобы мы могли его проверять.
+        self.footstep_channel: Optional[pg.mixer.Channel] = None
+        # ИЗМЕНЕНИЕ: УДАЛЯЕМ self.footstep_sound, так как он больше не нужен напрямую.
 
     def set_inner_rect(self) -> None:
         """Обновляет позицию внутреннего прямоугольника для коллизий"""
@@ -107,7 +107,7 @@ class Player(pg.sprite.Sprite):
     def check_obj(self) -> Optional[object]:
         """
         Проверяет, есть ли рядом интерактивный объект.
-        
+
         Returns:
             Интерактивный объект или None
         """
@@ -119,7 +119,7 @@ class Player(pg.sprite.Sprite):
     def is_attacked(self) -> bool:
         """
         Проверяет, атакован ли игрок врагом.
-        
+
         Returns:
             True если игрок атакован
         """
@@ -131,7 +131,7 @@ class Player(pg.sprite.Sprite):
     def update(self, level: list, player_it: int) -> None:
         """
         Обновляет состояние игрока.
-        
+
         Args:
             level: Карта уровня
             player_it: Счетчик итераций для анимации
@@ -160,18 +160,18 @@ class Player(pg.sprite.Sprite):
 
         is_moving = self.up or self.down or self.right or self.left
 
+        # ИЗМЕНЕНИЕ: Логика звука шагов
         if is_moving:
             # Проверяем, свободен ли канал для шагов.
-            # Он свободен, если он еще не был создан (None) ИЛИ если звук на нем уже доиграл (get_busy() == False).
             if self.footstep_channel is None or not self.footstep_channel.get_busy():
-                # Если да - проигрываем звук и сохраняем новый канал.
+                # Если да - проигрываем звук через audio_manager и сохраняем новый канал.
                 self.footstep_channel = play_sound('footsteps')
-
-        # Сброс анимации при отсутствии движения
-        if not is_moving:
+        else:
+            # Сброс анимации и плавное затухание звука при остановке
             self.cur_frame = -1
             if self.footstep_channel and self.footstep_channel.get_busy():
-                self.footstep_sound.fadeout(300)
+                # Используем нашу новую централизованную функцию
+                fadeout_sound(self.footstep_channel, 300)
                 self.footstep_channel = None
 
         # Применяем движение с проверкой коллизий
@@ -187,7 +187,7 @@ class Player(pg.sprite.Sprite):
     def collide(self, x_delta: int, y_delta: int) -> None:
         """
         Обрабатывает коллизии со стенами.
-        
+
         Args:
             x_delta: Изменение по X
             y_delta: Изменение по Y
@@ -207,7 +207,7 @@ class Player(pg.sprite.Sprite):
     def get_position(self) -> tuple[int, int]:
         """
         Возвращает текущую позицию игрока.
-        
+
         Returns:
             Кортеж (x, y) с координатами центра игрока
         """

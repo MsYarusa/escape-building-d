@@ -1,4 +1,5 @@
 import os
+
 import pygame as pg
 
 import game.level_state as level_state
@@ -17,8 +18,10 @@ from game.groups import (
 from game.levels import load_level, generate_level
 from game.progress_manager import progress_manager
 from game.screens.end_level_screen import show_end_level_screen
+from game.screens.settings_screen import show_settings_screen
 from game.settings import (
     WIN_WIDTH,
+    WIN_HEIGHT,
     TILE_WIDTH,
     TILE_HEIGHT,
     BLACK,
@@ -26,207 +29,179 @@ from game.settings import (
 )
 from game.systems import LightingSystem
 from game.ui import Hint, Replica, Button
-from game.utils.audio_manager import play_music, stop_music, play_sound
+from game.utils.audio_manager import play_music, stop_music
 
 
 def show_main_screen(set_active_screen, screen, clock):
     """
     Основной игровой экран.
-    
-    Отвечает за:
-    - Игровой цикл
-    - Обработку событий
-    - Обновление игровых объектов
-    - Рендеринг
-    - Систему освещения
     """
 
-    def pause():
-        """Переключает состояние паузы"""
-        if paused:
-            shadow.set_alpha(120)
-        else:
-            shadow.set_alpha(0)
+    def show_pause_menu():
+        """
+        Отрисовывает и обрабатывает меню паузы с корректной логикой кнопок.
+        """
+        game_background = screen.copy()
+        overlay = pg.Surface((WIN_WIDTH, WIN_HEIGHT))
+        overlay.fill(BLACK)
+        overlay.set_alpha(180)
+        font_title = pg.font.SysFont('calibry', 60, bold=True)
+        title = font_title.render('Пауза', True, (255, 255, 255))
+        title_rect = title.get_rect(center=(WIN_WIDTH // 2, 150))
+        btn_size = (320, 70)
+        continue_btn = Button((WIN_WIDTH // 2 - btn_size[0] // 2, 250), 'btn')
+        continue_btn.scale(btn_size)
+        continue_btn.set_text('Продолжить', font_size=36)
+        settings_btn = Button((WIN_WIDTH // 2 - btn_size[0] // 2, 340), 'btn')
+        settings_btn.scale(btn_size)
+        settings_btn.set_text('Настройки', font_size=36)
+        exit_btn = Button((WIN_WIDTH // 2 - btn_size[0] // 2, 430), 'btn')
+        exit_btn.scale(btn_size)
+        exit_btn.set_text('Выйти в меню', font_size=36)
+        buttons = [continue_btn, settings_btn, exit_btn]
+        pressed_button = None
+        paused_loop = True
+        while paused_loop:
+            screen.blit(game_background, (0, 0))
+            screen.blit(overlay, (0, 0))
+            screen.blit(title, title_rect)
+            for btn in buttons:
+                screen.blit(btn.image, btn.rect)
+            pg.display.flip()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    return 'quit_game'
+                if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+                    return 'continue'
+                if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                    for btn in buttons:
+                        if btn.rect.collidepoint(event.pos):
+                            btn.change_state()
+                            pressed_button = btn
+                            break
+                if event.type == pg.MOUSEBUTTONUP and event.button == 1:
+                    if pressed_button:
+                        if pressed_button.rect.collidepoint(event.pos):
+                            if pressed_button is continue_btn: return 'continue'
+                            if pressed_button is exit_btn: return 'exit_to_menu'
+                            if pressed_button is settings_btn:
+                                pressed_button.change_state()
+                                pg.display.flip()
+                                if not show_settings_screen(set_active_screen, screen, clock, source_screen='pause'):
+                                    return 'quit_game'
+                                pressed_button = None
+                                break
+                        pressed_button.change_state()
+                        pressed_button = None
+        return 'continue'
 
-    # Очищаем все группы спрайтов
     clear_all_groups()
-
-    # Загружаем уровень и создаем игрока
     level = load_level(level_state.current_level_path)
     player = generate_level(level)
-
-    # Запускаем игровую музыку
     play_music('game')
-
-    # Вычисляем размеры уровня
-    total_level_width = len(level[0]) * TILE_WIDTH
-    total_level_height = len(level) * TILE_HEIGHT
-
-    # Создаем поверхность для паузы
-    shadow = pg.Surface((total_level_width, total_level_height))
-    shadow.fill(BLACK)
-    shadow.set_alpha(0)
-
-    # Инициализируем системы
-    camera = Camera(total_level_width, total_level_height)
+    camera = Camera(len(level[0]) * TILE_WIDTH, len(level) * TILE_HEIGHT)
     lighting_system = LightingSystem()
-
-    # Создаем UI элементы
     hint = Hint()
     replica = Replica()
     replica.add(replica_group)
-    pause_btn = Button((WIN_WIDTH - TILE_WIDTH, 0), 'pause')
-    pause_btn.add(text_boxes_group)
-
-    # Игровые переменные
     player_it = 0
     running = True
     paused = False
     dead = False
     end = False
-
-    # Получаем индекс текущего уровня
-    current_level_name = level_state.current_level_path.split('Level_')[-1].split('.txt')[0]
     try:
-        current_level_idx = int(current_level_name)
-    except Exception:
+        level_name = level_state.current_level_path.split('Level_')[-1].split('.txt')[0]
+        current_level_idx = int(level_name)
+    except (ValueError, IndexError):
         current_level_idx = 1
 
     while running:
+        if paused:
+            action = show_pause_menu()
+            if action == 'continue':
+                paused = False
+
+                keys = pg.key.get_pressed()
+                player.left = keys[pg.K_a] or keys[pg.K_LEFT]
+                player.right = keys[pg.K_d] or keys[pg.K_RIGHT]
+                player.up = keys[pg.K_w] or keys[pg.K_UP]
+                player.down = keys[pg.K_s] or keys[pg.K_DOWN]
+
+            elif action == 'exit_to_menu':
+                set_active_screen('start')
+                return True
+            elif action == 'quit_game':
+                return False
+            continue
+
         clock.tick(FPS)
 
-        # Обработка событий
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-
-            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                event_pos = (event.pos[0] - camera.rect.x, event.pos[1] - camera.rect.y)
-                if pause_btn.pressed(event_pos):
-                    paused = not paused
-                    pause()
-
             if event.type == pg.KEYDOWN:
-                # Управление движением
-                if event.key == pg.K_a or event.key == pg.K_LEFT:
-                    player.left = True
-                if event.key == pg.K_w or event.key == pg.K_UP:
-                    player.up = True
-                if event.key == pg.K_s or event.key == pg.K_DOWN:
-                    player.down = True
-                if event.key == pg.K_d or event.key == pg.K_RIGHT:
-                    player.right = True
-
-                # Взаимодействие
+                if event.key == pg.K_ESCAPE:
+                    paused = True
+                    continue
+                if event.key in (pg.K_a, pg.K_LEFT): player.left = True
+                if event.key in (pg.K_d, pg.K_RIGHT): player.right = True
+                if event.key in (pg.K_w, pg.K_UP): player.up = True
+                if event.key in (pg.K_s, pg.K_DOWN): player.down = True
                 if event.key == pg.K_e:
                     hint.hide()
-                    if player.check_obj():
-                        player.check_obj().interact()
-
-                # Управление репликами
+                    obj = player.check_obj()
+                    if obj: obj.interact()
                 if event.key == pg.K_SPACE:
                     replica.change_text()
-
-                # Пауза
-                if event.key == pg.K_ESCAPE:
-                    pause_btn.change_state()
-                    paused = not paused
-                    pause()
-
             if event.type == pg.KEYUP:
-                # Остановка движения
-                if event.key == pg.K_a or event.key == pg.K_LEFT:
-                    player.left = False
-                if event.key == pg.K_w or event.key == pg.K_UP:
-                    player.up = False
-                if event.key == pg.K_s or event.key == pg.K_DOWN:
-                    player.down = False
-                if event.key == pg.K_d or event.key == pg.K_RIGHT:
-                    player.right = False
+                if event.key in (pg.K_a, pg.K_LEFT): player.left = False
+                if event.key in (pg.K_d, pg.K_RIGHT): player.right = False
+                if event.key in (pg.K_w, pg.K_UP): player.up = False
+                if event.key in (pg.K_s, pg.K_DOWN): player.down = False
 
-        # Обновление игровой логики (только если не на паузе)
-        if not paused:
-            if player_it % 2 == 0:
-                # Обновляем игрока как обычно
-                player_group.update(level, player_it)
-
-                # Обновляем врагов с помощью цикла, передавая все нужные аргументы
-                for enemy in enemies_group:
-                    enemy.update(player, lighting_system, level, player_it)
-
-                # Обновляем остальные группы как обычно
-                stairs_group.update(level)
-                vents_group.update(level)
-                keys_group.update(level)
-            player_it += 1
-
-        # Проверка условий завершения игры
+        if player_it % 2 == 0:
+            player_group.update(level, player_it)
+            for enemy in enemies_group:
+                enemy.update(player, lighting_system, level, player_it)
+            stairs_group.update(level)
+            vents_group.update(level)
+            keys_group.update(level)
+        player_it += 1
         if player.is_attacked():
-            dead = True
-            running = False
-
+            dead, running = True, False
         for stairs in stairs_group:
             if stairs.opened:
-                end = True
-                running = False
-
-        # Обновление подсказок
-        if player.check_obj():
-            player.check_obj().make_hint(hint)
+                end, running = True, False
+        obj = player.check_obj()
+        if obj:
+            obj.make_hint(hint)
         else:
             hint.hide()
-
-        # Обновление системы освещения
         lighting_system.update_lighting(player.get_position(), level)
-
-        # Рендеринг
-        screen.fill(BLACK)
         camera.update(player)
-
-        # Отрисовка всех спрайтов
-        for obj in all_sprites_group:
-            screen.blit(obj.image, camera.apply(obj))
-
-        # Обновление UI
         hint.update()
         replica.update()
-
-        # Наложение паузы
-        screen.blit(shadow, (0, 0))
-
-        # Отрисовка текстовых элементов
+        screen.fill(BLACK)
+        for obj in all_sprites_group:
+            screen.blit(obj.image, camera.apply(obj))
         for obj in text_boxes_group:
             screen.blit(obj.image, camera.apply(obj))
-
         pg.display.flip()
 
-    # Останавливаем музыку
+    # --- Код после цикла (без изменений) ---
     stop_music()
-
-    # Очистка ресурсов
-    for obj in all_sprites_group:
-        obj.kill()
-    for obj in text_boxes_group:
-        obj.kill()
-
-    # Очистка кэша системы освещения
+    clear_all_groups()
     lighting_system.clear_cache()
-
-    # Переход к соответствующему экрану
     if dead:
         set_active_screen('dead')
         return True
-
     if end:
-        # Отмечаем уровень как завершённый и открываем следующий
         progress_manager.complete_level(current_level_idx)
         progress_manager.unlock_level(current_level_idx + 1)
-        # Переходим на экран завершения уровня
         next_level = show_end_level_screen(set_active_screen, screen, clock, current_level_idx)
-        if next_level is not None:
-            # Если выбран следующий уровень, меняем путь и запускаем main_screen снова
-            if next_level <= len(progress_manager.levels):
-                from game.level_state import set_current_level_path
-                set_current_level_path(os.path.join('..', 'assets', 'levels', progress_manager.levels[next_level - 1]))
-                show_main_screen(set_active_screen, screen, clock)
+        if next_level is not None and next_level <= len(progress_manager.levels):
+            level_path = os.path.join('..', 'assets', 'levels', progress_manager.levels[next_level - 1])
+            level_state.set_current_level_path(level_path)
+            return show_main_screen(set_active_screen, screen, clock)
         return True
+    return False

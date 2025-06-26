@@ -18,3 +18,4 @@ Thumbs.db
 
 # Игровой прогресс
 scr/game/progress.json
+scr/game/settings.json

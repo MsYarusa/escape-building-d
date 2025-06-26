@@ -1,50 +1,63 @@
-import pygame
+import pygame as pg
 
-from game.resources import music_paths, sound_effects
+from game.settings_manager import settings_manager
+
+pg.mixer.init()
+
+music_paths = {
+    'menu': '..\\assets\\audio\\music\\menu_music.mp3',
+    'game': '..\\assets\\audio\\music\\game_music.mp3'
+}
+
+sound_effects = {
+    'footsteps': pg.mixer.Sound('..\\assets\\audio\\effects\\footsteps_sound.wav'),
+    'door_open': pg.mixer.Sound('..\\assets\\audio\\effects\\door_opened_sound.wav'),
+    'door_closed': pg.mixer.Sound('..\\assets\\audio\\effects\\door_closed_sound.wav'),
+    'raise_item': pg.mixer.Sound('..\\assets\\audio\\effects\\raise_item_sound.wav'),
+    'lost_soul': pg.mixer.Sound('..\\assets\\audio\\effects\\ghost_whisper_sound.wav'),
+    'cockroach': pg.mixer.Sound('..\\assets\\audio\\effects\\cockroach_sound.wav'),
+    'lose': pg.mixer.Sound('..\\assets\\audio\\effects\\lose_sound.wav'),
+    'win': pg.mixer.Sound('..\\assets\\audio\\effects\\win_sound.wav'),
+    'vent': pg.mixer.Sound('..\\assets\\audio\\effects\\vent_sound.wav')
+}
+
+
+def update_volumes():
+    """Обновляет громкость всей музыки и эффектов согласно настройкам."""
+    pg.mixer.music.set_volume(settings_manager.music_volume)
+    for sound in sound_effects.values():
+        sound.set_volume(settings_manager.sfx_volume)
 
 
 def play_music(track_name, loops=-1, fade_ms=1000):
-    pygame.mixer.music.fadeout(fade_ms)
-
-    pygame.mixer.music.load(music_paths[track_name])
-
-    pygame.mixer.music.play(loops=loops, fade_ms=fade_ms)
+    """Воспроизводит музыку с текущей громкостью."""
+    pg.mixer.music.set_volume(settings_manager.music_volume)
+    pg.mixer.music.fadeout(fade_ms)
+    pg.mixer.music.load(music_paths[track_name])
+    pg.mixer.music.play(loops=loops, fade_ms=fade_ms)
 
 
 def stop_music(fade_ms=1000):
-    pygame.mixer.music.fadeout(fade_ms)
+    pg.mixer.music.fadeout(fade_ms)
 
 
-def set_volume(volume):
-    pygame.mixer.music.set_volume(volume)
-
-
-def play_sound(name, volume: float = -1.0):
-    """
-    Воспроизводит звуковой эффект по его имени.
-    :param name: Ключ из словаря sound_effects.
-    :param volume: Громкость от 0.0 до 1.0. Если -1, используется громкость по умолчанию.
-    """
+def play_sound(name):
+    """Воспроизводит звуковой эффект с текущей громкостью."""
     if name in sound_effects:
-        sound_to_play = sound_effects[name]
-
-        if 0.0 <= volume <= 1.0:
-            sound_to_play.set_volume(volume)
-
-        return sound_to_play.play()
+        sound = sound_effects[name]
+        # Устанавливаем громкость прямо перед воспроизведением
+        sound.set_volume(settings_manager.sfx_volume)
+        return sound.play()
     else:
         print(f"Внимание: Звуковой эффект '{name}' не найден!")
         return None
 
 
 def fadeout_sound(channel, fade_time_ms: int = 500):
-    """
-    Плавно останавливает звук на указанном канале.
-
-    Args:
-        channel: Объект pygame.mixer.Channel, на котором играет звук.
-        fade_time_ms: Время затухания в миллисекундах.
-    """
-    # Проверяем, что канал существует и на нем что-то играет
     if channel and channel.get_busy():
         channel.fadeout(fade_time_ms)
+
+
+# Применяем громкость при первом импорте модуля, чтобы все звуки
+# сразу имели правильную громкость при старте игры.
+update_volumes()

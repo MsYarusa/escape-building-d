@@ -3,8 +3,6 @@ import pygame as pg
 from utils.images import load_image
 from .settings import TILE_WIDTH, TILE_HEIGHT
 
-pg.mixer.init()
-
 tile_images = {
     'simple_floor': pg.transform.scale(load_image(
         '..\\assets\\images\\entities\\objects\\floor.png'), (TILE_WIDTH, TILE_HEIGHT)),
@@ -83,23 +81,3 @@ replicas = {
     'cockroach': ['ОГРОМНЫЙ таракан!!!', 'Хмм.. Кажется он не заинтересован во мне',
                   'Но все равно думаю лучше его не касаться']
 }
-
-music_paths = {
-    'menu': '..\\assets\\audio\\music\\menu_music.mp3',
-    'game': '..\\assets\\audio\\music\\game_music.mp3'
-}
-
-sound_effects = {
-    'footsteps': pg.mixer.Sound('..\\assets\\audio\\effects\\footsteps_sound.wav'),
-    'door_open': pg.mixer.Sound('..\\assets\\audio\\effects\\door_opened_sound.wav'),
-    'door_closed': pg.mixer.Sound('..\\assets\\audio\\effects\\door_closed_sound.wav'),
-    'raise_item': pg.mixer.Sound('..\\assets\\audio\\effects\\raise_item_sound.wav'),
-    'lost_soul': pg.mixer.Sound('..\\assets\\audio\\effects\\ghost_whisper_sound.wav'),
-    'cockroach': pg.mixer.Sound('..\\assets\\audio\\effects\\cockroach_sound.wav'),
-    'lose': pg.mixer.Sound('..\\assets\\audio\\effects\\lose_sound.wav'),
-    'win': pg.mixer.Sound('..\\assets\\audio\\effects\\win_sound.wav'),
-    'vent': pg.mixer.Sound('..\\assets\\audio\\effects\\vent_sound.wav')
-}
-
-for sound in sound_effects.values():
-    sound.set_volume(1)
