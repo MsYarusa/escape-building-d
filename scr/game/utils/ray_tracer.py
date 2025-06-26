@@ -1,114 +1,84 @@
-from typing import List, Tuple, Iterator
-import math
+from typing import List, Tuple, Set
 
 
 class RayTracer:
     """
-    Оптимизированная система трассировки лучей для проверки видимости.
-    
-    Использует алгоритм Брезенхэма для эффективного построения линий
-    и проверки пересечений со стенами.
+    Оптимизированная система поля зрения (Field of View), использующая
+    алгоритм Recursive Shadowcasting для расчета видимых ячеек.
     """
-    
+    # Трансформации для 8 октантов для сканирования на 360 градусов
+    _OCTANT_TRANSFORMS = [
+        (1, 0, 0, 1), (0, 1, 1, 0), (0, -1, 1, 0), (-1, 0, 0, 1),
+        (-1, 0, 0, -1), (0, -1, -1, 0), (0, 1, -1, 0), (1, 0, 0, -1)
+    ]
+
     @staticmethod
-    def bresenham_line(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
-        """
-        Генерирует точки линии между двумя точками используя алгоритм Брезенхэма.
-        
-        Args:
-            start: Начальная точка (x, y)
-            end: Конечная точка (x, y)
-            
-        Yields:
-            Точки линии (x, y)
-        """
-        x0, y0 = start
-        x1, y1 = end
-        
-        dx = abs(x1 - x0)
-        dy = abs(y1 - y0)
-        
-        # Определяем направление движения
-        sx = 1 if x0 < x1 else -1
-        sy = 1 if y0 < y1 else -1
-        
-        err = dx - dy
-        
-        while True:
-            yield (x0, y0)
-            
-            if x0 == x1 and y0 == y1:
-                break
-                
-            e2 = 2 * err
-            if e2 > -dy:
-                err -= dy
-                x0 += sx
-            if e2 < dx:
-                err += dx
-                y0 += sy
-    
-    @staticmethod
-    def check_line_of_sight(start: Tuple[int, int], end: Tuple[int, int], 
-                           level: List[str], shadow_coef: int) -> bool:
-        """
-        Проверяет видимость между двумя точками через карту уровня.
-        
-        Args:
-            start: Начальная точка в координатах сетки теней
-            end: Конечная точка в координатах сетки теней
-            level: Карта уровня
-            shadow_coef: Коэффициент масштабирования теней
-            
-        Returns:
-            True если точки видимы друг другу
-        """
-        for x, y in RayTracer.bresenham_line(start, end):
-            # Конвертируем координаты сетки теней в координаты уровня
-            level_x = x // shadow_coef
-            level_y = y // shadow_coef
-            
-            # Проверяем границы уровня
-            if (level_y < 0 or level_y >= len(level) or 
-                level_x < 0 or level_x >= len(level[0])):
-                continue
-                
-            # Проверяем, не является ли клетка стеной
-            if level[level_y][level_x] == '#':
-                return False
-                
-        return True
-    
-    @staticmethod
-    def get_visible_cells(player_pos: Tuple[int, int], radius: int, 
-                         level: List[str], shadow_coef: int) -> set:
+    def get_visible_cells(player_pos: Tuple[int, int], radius: int,
+                          level: List[str], shadow_coef: int) -> Set[Tuple[int, int]]:
         """
         Возвращает множество видимых клеток в заданном радиусе от игрока.
-        
-        Args:
-            player_pos: Позиция игрока в координатах сетки теней
-            radius: Радиус видимости
-            level: Карта уровня
-            shadow_coef: Коэффициент масштабирования теней
-            
-        Returns:
-            Множество видимых клеток (x, y)
         """
-        visible_cells = set()
         px, py = player_pos
-        
-        # Проверяем все клетки в радиусе
-        for dx in range(-radius, radius + 1):
-            for dy in range(-radius, radius + 1):
-                # Проверяем, что клетка в радиусе
-                if dx * dx + dy * dy <= radius * radius:
-                    cell_x = px + dx
-                    cell_y = py + dy
-                    
-                    # Проверяем видимость
-                    if RayTracer.check_line_of_sight(
-                        (px, py), (cell_x, cell_y), level, shadow_coef
-                    ):
-                        visible_cells.add((cell_x, cell_y))
-                        
-        return visible_cells 
+        visible_cells = {(px, py)}
+        radius_sq = radius * radius
+
+        for transform in RayTracer._OCTANT_TRANSFORMS:
+            RayTracer._scan_octant(
+                player_pos, radius_sq, 1, 1.0, 0.0, transform,
+                visible_cells, level, shadow_coef
+            )
+
+        return visible_cells
+
+    @staticmethod
+    def _is_wall(x: int, y: int, level: List[str], shadow_coef: int) -> bool:
+        """Проверяет, является ли клетка на сетке теней стеной на карте уровня."""
+        level_x = x // shadow_coef
+        level_y = y // shadow_coef
+
+        if not (0 <= level_y < len(level) and 0 <= level_x < len(level[0])):
+            return True  # Считаем границы карты стенами для корректного отсечения
+        return level[level_y][level_x] == '#'
+
+    @staticmethod
+    def _scan_octant(player_pos: Tuple[int, int], radius_sq: int, depth: int,
+                     start_slope: float, end_slope: float,
+                     transform: Tuple[int, int, int, int],
+                     visible_cells: Set[Tuple[int, int]],
+                     level: List[str], shadow_coef: int):
+        """Рекурсивно сканирует один октант для определения видимых ячеек."""
+        px, py = player_pos
+        xx, xy, yx, yy = transform
+
+        if start_slope < end_slope:
+            return
+
+        for i in range(depth, int(radius_sq ** 0.5) + 1):
+            prev_is_wall = None
+            min_dy = round(i * end_slope)
+            max_dy = round(i * start_slope)
+
+            for j in range(max_dy, min_dy - 1, -1):
+                x = px + i * xx + j * xy
+                y = py + i * yx + j * yy
+
+                if (x - px) ** 2 + (y - py) ** 2 > radius_sq:
+                    continue
+
+                visible_cells.add((x, y))
+                is_wall = RayTracer._is_wall(x, y, level, shadow_coef)
+
+                if prev_is_wall is not None:
+                    if is_wall and not prev_is_wall:
+                        new_end_slope = (j + 0.5) / (i - 0.5)
+                        RayTracer._scan_octant(
+                            player_pos, radius_sq, i + 1, start_slope, new_end_slope,
+                            transform, visible_cells, level, shadow_coef
+                        )
+                    elif not is_wall and prev_is_wall:
+                        start_slope = (j + 0.5) / (i + 0.5)
+
+                prev_is_wall = is_wall
+
+            if prev_is_wall:
+                break
