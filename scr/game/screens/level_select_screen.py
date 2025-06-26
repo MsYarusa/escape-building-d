@@ -52,6 +52,11 @@ def show_level_select_screen(set_active_screen, screen, clock):
     down_btn.set_text('', font_size=1, color='black')
     draw_arrow(down_btn.image, direction='down', color=(0, 0, 0))
 
+    # Кнопка "Создать уровень"
+    create_level_btn = Button((WIN_WIDTH - (180 + 30), 30), 'btn')
+    create_level_btn.scale((200, 60))
+    create_level_btn.set_text('Создать уровень', font_size=32, color='black')
+
     running = True
     back_pressed = False
     pressed_btn = None  # (item, btn)
@@ -86,6 +91,7 @@ def show_level_select_screen(set_active_screen, screen, clock):
                     btn.image.set_alpha(255)
                 screen.blit(btn.image, (btn.rect.x, btn.rect.y))
                 visible.append(('level', btn, level_files[idx], unlocked))
+        screen.blit(create_level_btn.image, (create_level_btn.rect.x, create_level_btn.rect.y))
         pg.display.flip()
 
         for event in pg.event.get():
@@ -105,6 +111,13 @@ def show_level_select_screen(set_active_screen, screen, clock):
                         elif item[0] == 'down':
                             draw_arrow(btn.image, direction='down', color=(0, 0, 0))
                         pressed_btn = (item, btn)
+                # Обработка нажатия на кнопку создания уровня
+                if create_level_btn.rect.collidepoint(event.pos):
+                    create_level_btn.change_state()
+                    pg.display.flip()
+                    time.sleep(0.12)
+                    set_active_screen('level_editor')
+                    return True
             if event.type == pg.MOUSEBUTTONUP and event.button == 1:
                 if back_pressed:
                     if back_btn.rect.collidepoint(event.pos):

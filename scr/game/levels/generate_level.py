@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, choice
 
 from game.entities import (
     BaseTile,
@@ -18,39 +18,76 @@ from game.settings import SHADOW_COEF
 
 
 def generate_level(level):
-    new_player, x, y, player_x, player_y = None, None, None, None, None
+    # Разделяем карту и секцию сущностей
+    entity_start = None
+    for y, line in enumerate(level):
+        if line.strip() == '---':
+            entity_start = y
+            break
 
-    height = len(level)
-    width = len(level[0])
+    if entity_start is not None:
+        map_lines = level[:entity_start]
+        entity_lines = level[entity_start+1:]
+    else:
+        map_lines = level
+        entity_lines = []
 
-    y = 0
-    while y < height:
+    height = len(map_lines)
+    width = len(map_lines[0])
+    player_spawns = []
+    exit_positions = []
+    door_candidates = []
+    map_matrix = [list(row) for row in map_lines]
+
+    # Проход по карте
+    for y in range(height):
         for x in range(width):
-            if level[y][x] == '.':
-                BaseTile('simple_floor', x, y)
-            elif level[y][x] == '|':
-                BaseTile('floor_near_wall', x, y)
-            elif level[y][x] == '0':
-                SimpleDoor(x, y)
-            elif level[y][x] == '#':
-                BaseTile('wall', x, y)
-            elif level[y][x] == 'x':
-                Stairs(x, y)
-            if level[y][x] == '@':
-                height = y
-                break
-        y += 1
+            char = map_matrix[y][x]
+            match char:
+                case '@':
+                    player_spawns.append((x, y))
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    BaseTile(tile_type, x, y)
+                case 'x':
+                    exit_positions.append((x, y))
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    BaseTile(tile_type, x, y)
+                case '?':
+                    door_candidates.append((x, y))
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    BaseTile(tile_type, x, y)
+                case '#':
+                    BaseTile('wall', x, y)
+                case '.':
+                    tile_type = 'floor_near_wall' if y > 0 and map_matrix[y-1][x] == '#' else 'simple_floor'
+                    BaseTile(tile_type, x, y)
+                case _:
+                    pass
 
+    # Размещаем выходы
+    for pos in exit_positions:
+        Stairs(*pos)
+
+    if door_candidates:
+        door_pos = choice(door_candidates)
+        Stairs(*door_pos)
+
+    # Парсим секцию сущностей
     entities = {}
-
-    while y < len(level):
-        entity, *pos = level[y].split()
-        if entity not in entities.keys():
+    for line in entity_lines:
+        if not line.strip():
+            continue
+        entity, *pos = line.split()
+        if entity not in entities:
             entities[entity] = []
-        entities[entity].append(tuple(map(lambda x: int(x), pos)))
-        y += 1
+        entities[entity].append(tuple(map(int, pos)))
 
-    if 'locked_door' in entities.keys():
+    if 'door' in entities:
+        for pos in entities['door']:
+            SimpleDoor(*pos)
+
+
+    if 'locked_door' in entities:
         numbers = []
         for pos in entities['locked_door']:
             locked_door = LockedDoor(pos[0], pos[1])
@@ -65,26 +102,28 @@ def generate_level(level):
             locked_door.set_pair(pair_door)
             pair_door.set_pair(locked_door)
 
-    if 'vent' in entities.keys():
+    if 'vent' in entities:
         for pos in entities['vent']:
             vent1 = Vent(pos[0], pos[1])
             vent2 = Vent(pos[2], pos[3])
             vent1.set_pair(vent2)
             vent2.set_pair(vent1)
 
-    for pos in entities['player']:
-        new_player = Player(*pos)
-
-    if 'lost_soul' in entities.keys():
+    if 'lost_soul' in entities:
         for pos in entities['lost_soul']:
             LostSoul(*pos)
 
-    if 'cockroach' in entities.keys():
+    if 'cockroach' in entities:
         for pos in entities['cockroach']:
             Cockroach(*pos)
 
     for y in range(height * SHADOW_COEF):
         for x in range(width * SHADOW_COEF):
             BaseShadowOverlay(x, y)
+
+    new_player = None
+    if player_spawns:
+        spawn = choice(player_spawns)
+        new_player = Player(*spawn)
 
     return new_player
