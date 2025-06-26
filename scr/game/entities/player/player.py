@@ -76,6 +76,7 @@ class Player(pg.sprite.Sprite):
         # Информация о собранных объектах
         self.info_collected = {
             'lost_soul': False,
+            'lost_girl': False,
             'cockroach': False,
             'stairs': False,
             'vent': False,

@@ -9,6 +9,7 @@ from game.entities import (
     Vent,
     BaseShadowOverlay,
     LostSoul,
+    LostGirl,
     Cockroach,
     Player,
     SimpleDoor
@@ -110,6 +111,10 @@ def generate_level(level):
     if 'lost_soul' in entities:
         for pos in entities['lost_soul']:
             LostSoul(*pos)
+
+    if 'lost_girl' in entities:
+        for pos in entities['lost_girl']:
+            LostGirl(*pos)
 
     if 'cockroach' in entities:
         for pos in entities['cockroach']:

@@ -11,6 +11,9 @@ from game.settings import (
     LOST_SOUL_RECT_X,
     LOST_SOUL_RECT_Y,
     LOST_SOUL_SPEED,
+    LOST_GIRL_RECT_X,
+    LOST_GIRL_RECT_Y,
+    LOST_GIRL_SPEED,
     TILE_WIDTH,
     TILE_HEIGHT,
     SHADOW_COEF,
@@ -24,7 +27,8 @@ from game.utils.images import cut_sheet
 # Словарь с данными для каждого типа врага
 enemy_data = {
     'lost_soul': (LOST_SOUL_SPEED, LOST_SOUL_RECT_X, LOST_SOUL_RECT_Y),
-    'cockroach': (COCKROACH_SPEED, COCKROACH_RECT_X, COCKROACH_RECT_Y)
+    'cockroach': (COCKROACH_SPEED, COCKROACH_RECT_X, COCKROACH_RECT_Y),
+    'lost_girl': (LOST_GIRL_SPEED, LOST_GIRL_RECT_X, LOST_GIRL_RECT_Y)
 }
 
 

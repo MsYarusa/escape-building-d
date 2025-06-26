@@ -15,6 +15,7 @@ sound_effects = {
     'door_closed': pg.mixer.Sound('..\\assets\\audio\\effects\\door_closed_sound.wav'),
     'raise_item': pg.mixer.Sound('..\\assets\\audio\\effects\\raise_item_sound.wav'),
     'lost_soul': pg.mixer.Sound('..\\assets\\audio\\effects\\ghost_whisper_sound.wav'),
+    'lost_girl': pg.mixer.Sound('..\\assets\\audio\\effects\\ghost_whisper_sound.wav'),
     'cockroach': pg.mixer.Sound('..\\assets\\audio\\effects\\cockroach_sound.wav'),
     'lose': pg.mixer.Sound('..\\assets\\audio\\effects\\lose_sound.wav'),
     'win': pg.mixer.Sound('..\\assets\\audio\\effects\\win_sound.wav'),
