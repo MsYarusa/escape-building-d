@@ -62,6 +62,17 @@ def fadeout_sound(channel, fade_time_ms: int = 500):
         channel.fadeout(fade_time_ms)
 
 
+def stop_all_sfx(fade_time_ms: int = 200):
+    """
+    Плавно останавливает ВСЕ активные звуковые эффекты на всех каналах.
+    Музыка при этом не затрагивается.
+    """
+    for i in range(pg.mixer.get_num_channels()):
+        channel = pg.mixer.Channel(i)
+        if channel.get_busy():
+            channel.fadeout(fade_time_ms)
+
+
 # Применяем громкость при первом импорте модуля, чтобы все звуки
 # сразу имели правильную громкость при старте игры.
 update_volumes()

@@ -27,7 +27,7 @@ from game.settings import (
 )
 from game.systems import LightingSystem
 from game.ui import Hint, Replica, Button
-from game.utils.audio_manager import play_music, stop_music
+from game.utils.audio_manager import play_music, stop_music, stop_all_sfx
 
 
 def show_main_screen(set_active_screen, screen, clock):
@@ -187,8 +187,11 @@ def show_main_screen(set_active_screen, screen, clock):
             vents_group.update(level)
             keys_group.update(level)
         player_it += 1
+
+        # Здесь определяется смерть, после чего цикл завершается
         if player.is_attacked():
             dead, running = True, False
+
         for stairs in stairs_group:
             if stairs.opened:
                 end, running = True, False
@@ -208,20 +211,27 @@ def show_main_screen(set_active_screen, screen, clock):
             screen.blit(obj.image, camera.apply(obj))
         pg.display.flip()
 
-    # --- Код после цикла (без изменений) ---
     stop_music()
-    clear_all_groups()
-    lighting_system.clear_cache()
+
     if dead:
+        stop_all_sfx()
         set_active_screen('dead')
+        clear_all_groups()
+        lighting_system.clear_cache()
         return True
+
     if end:
         progress_manager.complete_level(current_level_idx)
         progress_manager.unlock_level(current_level_idx + 1)
+        clear_all_groups()
+        lighting_system.clear_cache()
         next_level = show_end_level_screen(set_active_screen, screen, clock, current_level_idx)
         if next_level is not None and next_level <= len(progress_manager.levels):
             level_path = os.path.join('..', 'assets', 'levels', progress_manager.levels[next_level - 1])
             level_state.set_current_level_path(level_path)
             return show_main_screen(set_active_screen, screen, clock)
         return True
+
+    clear_all_groups()
+    lighting_system.clear_cache()
     return False
