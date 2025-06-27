@@ -59,16 +59,13 @@ class BaseEnemy(pg.sprite.Sprite):
         # Настройка звука
         self.sound_name = enemy_type
         self.sound_timer = 0
-        self.sound_delay = 1000  # Задержка между звуками в мс
+        self.sound_delay = 1000  # Задержка перед повторным запуском звука в мс
         self.sound_channel: Optional[pg.mixer.Channel] = None
 
     def update(self, player, lighting_system, level, player_it):
         """
         Обновляет состояние врага, включая продвинутую логику звука.
         """
-        # --- 1. Определяем, должен ли враг сейчас издавать звук ---
-
-        is_visible = False
         distance = float('inf')
 
         # Определяем позицию врага в сетке теней
@@ -76,8 +73,9 @@ class BaseEnemy(pg.sprite.Sprite):
         enemy_grid_y = self.rect.centery // SHADOW_HEIGHT
 
         # Спрашиваем у системы освещения, виден ли враг
-        if lighting_system.is_position_visible((enemy_grid_x, enemy_grid_y)):
-            is_visible = True
+        is_visible = lighting_system.is_position_visible((enemy_grid_x, enemy_grid_y))
+
+        if is_visible:
             # Если виден, вычисляем расстояние до игрока
             dx = self.rect.centerx - player.rect.centerx
             dy = self.rect.centery - player.rect.centery
@@ -100,8 +98,7 @@ class BaseEnemy(pg.sprite.Sprite):
                 # Звук не играет. Нужно его запустить (с учетом задержки).
                 current_time = pg.time.get_ticks()
                 if current_time - self.sound_timer > self.sound_delay:
-                    # ИСПРАВЛЕНО: Сначала получаем канал, потом устанавливаем громкость
-                    self.sound_channel = play_sound(self.sound_name)
+                    self.sound_channel = play_sound(self.sound_name, loops=-1)
                     if self.sound_channel:  # Проверяем, что звук успешно запустился
                         self.sound_channel.set_volume(volume)
 
@@ -112,17 +109,15 @@ class BaseEnemy(pg.sprite.Sprite):
             # Если звук на нашем канале все еще играет, плавно его выключаем.
             if self.sound_channel and self.sound_channel.get_busy():
                 fadeout_sound(self.sound_channel)
-                self.sound_channel = None  # "Забываем" канал
+                self.sound_channel = None  # "Забываем" канал, чтобы можно было запустить его снова
 
     def set_replica(self, player, player_pos, pos, level):
         """
         Устанавливает реплику, если игрок видит врага.
-        (Этот метод кажется неполным или относится к старой логике, но оставлен как есть)
         """
         is_visible = True
 
         # Этот цикл выглядит как упрощенная проверка линии видимости.
-        # Возможно, его стоит заменить на вызов RayTracer.check_line_of_sight
         while pos[0] != player_pos[0] or pos[1] != player_pos[1]:
             if pos[0] != player_pos[0]:
                 pos[0] += (-1) ** (pos[0] > player_pos[0])

@@ -42,13 +42,16 @@ def stop_music(fade_ms=1000):
     pg.mixer.music.fadeout(fade_ms)
 
 
-def play_sound(name):
-    """Воспроизводит звуковой эффект с текущей громкостью."""
+def play_sound(name, loops=0):
+    """
+    Воспроизводит звуковой эффект с текущей громкостью.
+    loops: количество повторений, -1 для бесконечного цикла.
+    """
     if name in sound_effects:
         sound = sound_effects[name]
         # Устанавливаем громкость прямо перед воспроизведением
         sound.set_volume(settings_manager.sfx_volume)
-        return sound.play()
+        return sound.play(loops=loops)  # Используем параметр loops
     else:
         print(f"Внимание: Звуковой эффект '{name}' не найден!")
         return None
