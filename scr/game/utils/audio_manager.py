@@ -1,25 +1,26 @@
 import pygame as pg
 
 from game.settings_manager import settings_manager
+from game.utils.path_helper import resource_path
 
 pg.mixer.init()
 
 music_paths = {
-    'menu': '..\\assets\\audio\\music\\menu_music.mp3',
-    'game': '..\\assets\\audio\\music\\game_music.mp3'
+    'menu': resource_path('assets/audio/music/menu_music.mp3'),
+    'game': resource_path('assets/audio/music/game_music.mp3')
 }
 
 sound_effects = {
-    'footsteps': pg.mixer.Sound('..\\assets\\audio\\effects\\footsteps_sound.wav'),
-    'door_open': pg.mixer.Sound('..\\assets\\audio\\effects\\door_opened_sound.wav'),
-    'door_closed': pg.mixer.Sound('..\\assets\\audio\\effects\\door_closed_sound.wav'),
-    'raise_item': pg.mixer.Sound('..\\assets\\audio\\effects\\raise_item_sound.wav'),
-    'lost_soul': pg.mixer.Sound('..\\assets\\audio\\effects\\ghost_whisper_sound.wav'),
-    'lost_girl': pg.mixer.Sound('..\\assets\\audio\\effects\\ghost_whisper_sound.wav'),
-    'cockroach': pg.mixer.Sound('..\\assets\\audio\\effects\\cockroach_sound.wav'),
-    'lose': pg.mixer.Sound('..\\assets\\audio\\effects\\lose_sound.wav'),
-    'win': pg.mixer.Sound('..\\assets\\audio\\effects\\win_sound.wav'),
-    'vent': pg.mixer.Sound('..\\assets\\audio\\effects\\vent_sound.wav')
+    'footsteps': pg.mixer.Sound(resource_path('assets/audio/effects/footsteps_sound.wav')),
+    'door_open': pg.mixer.Sound(resource_path('assets/audio/effects/door_opened_sound.wav')),
+    'door_closed': pg.mixer.Sound(resource_path('assets/audio/effects/door_closed_sound.wav')),
+    'raise_item': pg.mixer.Sound(resource_path('assets/audio/effects/raise_item_sound.wav')),
+    'lost_soul': pg.mixer.Sound(resource_path('assets/audio/effects/ghost_whisper_sound.wav')),
+    'lost_girl': pg.mixer.Sound(resource_path('assets/audio/effects/ghost_whisper_sound.wav')),
+    'cockroach': pg.mixer.Sound(resource_path('assets/audio/effects/cockroach_sound.wav')),
+    'lose': pg.mixer.Sound(resource_path('assets/audio/effects/lose_sound.wav')),
+    'win': pg.mixer.Sound(resource_path('assets/audio/effects/win_sound.wav')),
+    'vent': pg.mixer.Sound(resource_path('assets/audio/effects/vent_sound.wav'))
 }
 
 
@@ -49,9 +50,8 @@ def play_sound(name, loops=0):
     """
     if name in sound_effects:
         sound = sound_effects[name]
-        # Устанавливаем громкость прямо перед воспроизведением
         sound.set_volume(settings_manager.sfx_volume)
-        return sound.play(loops=loops)  # Используем параметр loops
+        return sound.play(loops=loops)
     else:
         print(f"Внимание: Звуковой эффект '{name}' не найден!")
         return None

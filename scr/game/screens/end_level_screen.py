@@ -5,13 +5,14 @@ from game.utils.images import load_image
 from game.ui import Button
 from game.utils.audio_manager import play_sound
 from game.settings import BLACK
+from game.utils.path_helper import resource_path
 
 
 def show_end_level_screen(set_active_screen, screen, clock, current_level_idx):
     def render_screen():
         screen.fill(BLACK)
         screen.blit(load_image(
-            '..\\assets\\images\\ui\\background.png'), (0, 0))
+            resource_path('assets\\images\\ui\\background.png')), (0, 0))
         font = pg.font.SysFont('calibry', 56)
         title = font.render('Уровень пройден!', True, (255, 255, 255))
         title_rect = title.get_rect(center=(screen.get_width() // 2, 120))

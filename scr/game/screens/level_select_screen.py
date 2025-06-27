@@ -1,11 +1,14 @@
-import pygame as pg
 import os
 import time
+
+import pygame as pg
+
+from game.level_state import set_current_level_path
+from game.progress_manager import progress_manager
 from game.settings import BLACK
 from game.ui import Button
-from game.level_state import set_current_level_path
 from game.utils.images import load_image
-from game.progress_manager import progress_manager
+from game.utils.path_helper import resource_path
 
 
 def draw_arrow(surface, direction='up', color=(0, 0, 0)):
@@ -18,7 +21,7 @@ def draw_arrow(surface, direction='up', color=(0, 0, 0)):
 
 
 def show_level_select_screen(set_active_screen, screen, clock):
-    background = load_image('..\\assets\\images\\ui\\background.png')
+    background = load_image(resource_path('assets\\images\\ui\\background.png'))
 
     level_files = progress_manager.levels
     level_files.sort()
@@ -91,7 +94,7 @@ def show_level_select_screen(set_active_screen, screen, clock):
             elif idx < len(level_files):
                 unlocked = progress_manager.is_unlocked(idx + 1)
                 color = 'black' if unlocked else 'gray'
-                btn.set_text(f'Уровень {idx+1}', font_size=32, color=color)
+                btn.set_text(f'Уровень {idx + 1}', font_size=32, color=color)
                 if not unlocked:
                     btn.image.set_alpha(120)
                 else:

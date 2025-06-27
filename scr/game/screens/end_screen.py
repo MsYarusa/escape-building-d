@@ -3,12 +3,13 @@ import time
 
 from game.ui import Button
 from game.utils.images import load_image
+from game.utils.path_helper import resource_path
 
 
 def show_end_screen(set_active_screen, screen, clock):
     def render_screen():
         screen.blit(load_image(
-            '..\\assets\\images\\ui\\background.png'), (0, 0))
+            resource_path('assets\\images\\ui\\background.png')), (0, 0))
 
         label_font = pg.font.SysFont('calibry', 60)
         text_rendered = label_font.render('Пока все!', 0, pg.Color('white'))

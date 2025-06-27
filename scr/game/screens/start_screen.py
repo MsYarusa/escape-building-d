@@ -3,6 +3,7 @@ import pygame as pg
 from game.ui import Button
 from game.utils.audio_manager import play_music
 from game.utils.images import load_image
+from game.utils.path_helper import resource_path
 
 
 def show_start_screen(set_active_screen, screen, clock):
@@ -17,6 +18,7 @@ def show_start_screen(set_active_screen, screen, clock):
     Returns:
         bool: False, если игру нужно закрыть, иначе True.
     """
+
     # --- Инициализация ---
     def render_screen():
         # Определение размеров и позиций кнопок
@@ -39,8 +41,8 @@ def show_start_screen(set_active_screen, screen, clock):
         settings_btn.set_text('Настройки', font_size=40)
 
         # Загрузка и отрисовка фона и логотипа
-        screen.blit(load_image('..\\assets\\images\\ui\\background.png'), (0, 0))
-        logo = load_image('..\\assets\\images\\ui\\logo.png')
+        screen.blit(load_image(resource_path('assets\\images\\ui\\background.png')), (0, 0))
+        logo = load_image(resource_path('assets\\images\\ui\\logo.png'))
         logo_rect = logo.get_rect(center=(screen.get_width() // 2, 150))
         logo_rect.bottom = screen.get_height() // 2 - btn_size[1] + 60
         screen.blit(logo, logo_rect)

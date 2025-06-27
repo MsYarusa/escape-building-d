@@ -1,18 +1,17 @@
-import pygame as pg
 import time
 
-from game.utils.images import load_image
+import pygame as pg
 
 from game.ui import Button
-
 from game.utils.audio_manager import play_sound
+from game.utils.images import load_image
+from game.utils.path_helper import resource_path
 
 
 def show_dead_screen(set_active_screen, screen, clock):
-
     def render_screen():
         screen.blit(load_image(
-            '..\\assets\\images\\ui\\background.png'), (0, 0))
+            resource_path('assets\\images\\ui\\background.png')), (0, 0))
 
         label_font = pg.font.SysFont('calibry', 60)
         text_rendered = label_font.render('D корпус поглотил Вас!', 0, pg.Color('white'))
