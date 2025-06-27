@@ -1,7 +1,7 @@
 import pygame as pg
 
-from utils.images import load_image
-from .settings import TILE_WIDTH, TILE_HEIGHT
+from game.utils.images import load_image
+from game.settings import TILE_WIDTH, TILE_HEIGHT
 
 tile_images = {
     'simple_floor': pg.transform.scale(load_image(
