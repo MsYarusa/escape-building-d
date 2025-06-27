@@ -152,7 +152,8 @@ def show_level_select_screen(set_active_screen, screen, clock):
                         elif item[0] == 'down':
                             start_index = min(len(level_files) - num_visible, start_index + 1)
                         elif item[0] == 'level' and item[3]:
-                            set_current_level_path(os.path.join('..', 'assets', 'levels', item[2]))
+                            level_path = resource_path(os.path.join('assets', 'levels', item[2]))
+                            set_current_level_path(level_path)
                             set_active_screen('main')
                             return True
                     else:

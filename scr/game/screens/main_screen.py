@@ -28,6 +28,7 @@ from game.settings import (
 from game.systems import LightingSystem
 from game.ui import Hint, Replica, Button
 from game.utils.audio_manager import play_music, stop_music, stop_all_sfx
+from game.utils.path_helper import resource_path
 
 
 def show_main_screen(set_active_screen, screen, clock):
@@ -227,7 +228,8 @@ def show_main_screen(set_active_screen, screen, clock):
         lighting_system.clear_cache()
         next_level = show_end_level_screen(set_active_screen, screen, clock, current_level_idx)
         if next_level is not None and next_level <= len(progress_manager.levels):
-            level_path = os.path.join('..', 'assets', 'levels', progress_manager.levels[next_level - 1])
+            relative_path = os.path.join('assets', 'levels', progress_manager.levels[next_level - 1])
+            level_path = resource_path(relative_path)
             level_state.set_current_level_path(level_path)
             return show_main_screen(set_active_screen, screen, clock)
         return True

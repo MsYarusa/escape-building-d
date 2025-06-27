@@ -22,3 +22,4 @@ scr/game/settings.json
 dist/
 D-korpus.spec
 build/
+settings.json

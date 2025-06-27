@@ -1,3 +1,5 @@
+import sys
+
 import pygame as pg
 from game.settings import BLACK
 import os
@@ -480,7 +482,6 @@ def show_level_editor_screen(set_active_screen, screen, clock):
                         if not filename.endswith('.txt'):
                             filename += '.txt'
                         if filename:
-                            # Формируем содержимое файла
                             lines = []
                             for row in grid:
                                 lines.append(''.join(row))
@@ -489,8 +490,16 @@ def show_level_editor_screen(set_active_screen, screen, clock):
                                 etype = ent['type']
                                 params = [str(ent['params'][p[0]]) for p in ENTITY_PARAMS[etype]]
                                 lines.append(f"{etype} {' '.join(params)}")
-                            save_dir = os.path.join(os.path.dirname(__file__), '../../assets/levels')
-                            save_dir = os.path.abspath(save_dir)
+
+                            save_dir = ''
+                            if getattr(sys, 'frozen', False):
+                                base_path = os.path.dirname(sys.executable)
+                                save_dir = os.path.join(base_path, 'levels')
+                            else:
+                                current_file_path = os.path.abspath(__file__)
+                                scr_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
+                                save_dir = os.path.join(scr_dir, 'assets', 'levels')
+
                             os.makedirs(save_dir, exist_ok=True)
                             save_path = os.path.join(save_dir, filename)
                             with open(save_path, 'w', encoding='utf-8') as f:
